@@ -72,9 +72,9 @@ st.markdown("""
         50% { text-shadow: -3px 0 #FF00FF, 3px 0 #00FFFF, 0 0 20px rgba(0, 0, 0, 0.2); }
     }
     
-    /* 📱 [모바일 대응 반응형 타이틀 수정] */
+    /* 📱 [모바일 대응 반응형 타이틀] */
     .main-title {
-        font-size: 8vw; /* 화면 너비에 맞춰 자동 조절 */
+        font-size: 8vw;
         font-weight: bold; 
         color: #000000; 
         text-align: center;
@@ -87,7 +87,6 @@ st.markdown("""
         width: 100%;
     }
     
-    /* 화면이 넓은 PC 모니터용 해상도 가드라인 (일정 크기 이상 커지지 않게 고정) */
     @media (min-width: 600px) {
         .main-title {
             font-size: 2.5rem !important;
@@ -96,13 +95,11 @@ st.markdown("""
     
     .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.1rem; margin-bottom: 25px;}
     
-    /* 🛠️ 버튼 글자 크기도 모바일 환경에 깨지지 않도록 적정 선인 22px로 조절 */
     div[data-testid="stButton"] button p {
         font-size: 22px !important;
         font-weight: bold !important;
     }
     
-    /* 버튼 배경 및 테두리 설정 */
     div[data-testid="stButton"] button {
         display: block !important; width: 100% !important; padding: 12px 0 !important;
         border-radius: 20px !important;
@@ -127,6 +124,30 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
+    .login-box {
+        background: #FFFDF0 !important; 
+        padding: 25px 15px; 
+        border-radius: 20px;
+        border: 3px dashed #FFD93D;
+        margin-top: 25px; 
+        text-align: center;
+    }
+
+    /* ⌨️ [모바일 핀번호 입력창 색상 강제 회색 고정 패치] */
+    div[data-testid="stTextInput"] input {
+        background-color: #F1F3F5 !important; /* 부드러운 회색 바탕 */
+        color: #212529 !important;            /* 선명한 다크 그레이 글자색 */
+        -webkit-text-fill-color: #212529 !important; /* iOS 모바일 글자색 초기화 방지 */
+        border: 2px solid #CED4DA !important;  /* 은은한 테두리 */
+    }
+    /* 모바일 브라우저 자체 다크모드로 인한 강제 색상 반전 차단 */
+    @media (prefers-color-scheme: dark) {
+        div[data-testid="stTextInput"] input {
+            background-color: #F1F3F5 !important;
+            color: #212529 !important;
+        }
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", unsafe_allow_html=True)
