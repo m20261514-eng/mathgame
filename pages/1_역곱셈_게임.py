@@ -89,6 +89,16 @@ st.markdown("""
         box-shadow: 0px 2px 0px #D6B21E !important;
     }
 
+    /* 🔒 잠금(비활성화) 상태의 버튼 디자인 가이드 (모양과 색상은 유지하되 도각거림 멈춤) */
+    div[data-testid="stButton"] button:disabled {
+        background-color: #FFD93D !important;
+        color: #222222 !important;
+        box-shadow: 0px 6px 0px #D6B21E !important;
+        transform: none !important;
+        cursor: not-allowed !important;
+        opacity: 0.9 !important;
+    }
+
     /* 우측 상단 '로비로' 가는 버튼 전용 디자인 */
     .lobby-btn button { 
         background-color: #475569 !important; 
@@ -147,24 +157,27 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
-    # ⌨️ 상태에 무관하게 키패드는 상시 유지됩니다.
+    # 🛑 [잠금 가드 시스템] 정답 처리 진행 중이거나 힌트 대기 상태라면 키보드를 비활성화(True) 시킵니다.
+    is_keyboard_locked = (st.session_state.status != "playing") or ("last_reward" in st.session_state)
+
+    # ⌨️ 숫자 키패드 배치 구역
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
-                # 힌트나 정답 대기 상태가 아닐 때만 입력 허용
+            # disabled 옵션을 주어 잠금 시 버튼이 전혀 눌리지 않게 차단합니다.
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
                 if len(st.session_state.inputs) < 2 and st.session_state.status == "playing":
                     st.session_state.inputs.append(num)
                     st.session_state.is_answered = True
                     st.rerun()
 
-    if st.button("⌫ 지우기", use_container_width=True):
+    if st.button("⌫ 지우기", use_container_width=True, disabled=is_keyboard_locked):
         if len(st.session_state.inputs) > 0 and st.session_state.status == "playing":
             st.session_state.inputs.pop()
         st.rerun()
 
-    # 🟢 [수정 완료] 정답 효과창이 키보드 최하단으로 이동!
+    # 🟢 정답 효과창 (키보드 최하단 유지 및 안전한 지연처리)
     if "last_reward" in st.session_state:
         st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)
@@ -179,7 +192,8 @@ if st.session_state.gacha_step == "idle":
             
             st.session_state.gold += reward
             st.session_state.game_score += 1
-            st.session_state.last_reward = reward  # 화면 최하단에 정답을 띄우기 위해 보상액 임시 저장
+            st.session_state.last_reward = reward  
+            st.session_state.status = "correct_waiting" # 연타 방지를 위한 즉시 임시 상태 변경 보장
             
             force_file_save()
             st.rerun()
