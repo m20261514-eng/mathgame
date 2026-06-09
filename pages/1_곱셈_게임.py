@@ -2,12 +2,14 @@ import streamlit as st
 import random
 import time
 import json
-import base64  # 🛠️ 로컬 이미지를 불러오기 위한 라이브러리 추가
+import base64
+import os  # 🛠️ 경로 치트키를 위한 라이브러리 추가
 
 st.set_page_config(page_title="마법의 숲 곱셈 퀘스트", page_icon="🌿", layout="centered")
 
-# 🛠️ [내가 원하는 이미지 설정] 같은 폴더에 있는 이미지 파일 이름을 적어주세요!
-IMAGE_PATH = "pages/multiple_background.png"
+# 🛠️ [무조건 성공하는 경로 찾기] 현재 이 파이썬 파일이 있는 위치를 기준으로 이미지를 찾습니다.
+current_dir = os.path.dirname(__file__)
+IMAGE_PATH = os.path.join(current_dir, "multiple_background.png")
 
 # 이미지를 세션 상태 주입용 Base64로 변환하는 함수
 def get_base64_image(img_path):
@@ -75,23 +77,23 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- 🌲 [핵심 수정] 완벽한 레이어 붕괴 방지 및 로컬 배경 내장 CSS 🌲 ---
+# --- 🌲 PNG 포맷 반영 및 투명화 CSS 🌲 ---
 background_html = f"""
 <style>
-/* 1. 최상위 앱 컨테이너에 의사 요소를 주어 배경 고정 및 블러/밝기 조절 */
+/* 1. PNG 포맷에 맞게 data:image/png로 수정 완료 */
 [data-testid="stAppViewContainer"]::before {{
     content: "";
     position: fixed;
     top: -5%; left: -5%; width: 110%; height: 110%;
-    background-image: url("data:image/webp;base64,{img_base64}");
+    background-image: url("data:image/png;base64,{img_base64}");
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
-    filter: blur(8px) brightness(0.5); /* 🛠️ 여기서 블러 세기(8px)와 밝기(0.5) 조절 가능 */
+    filter: blur(6px) brightness(0.5); /* 블러 강도 및 밝기 */
     z-index: -2;
 }}
 
-/* 2. 배경을 가로막는 모든 중간 레이어판들을 강제로 투명화 */
+/* 2. 배경 가림막 레이어 완전 제거 */
 [data-testid="stAppViewContainer"], 
 [data-testid="stHeader"], 
 [data-testid="stMainViewContainer"], 
@@ -201,9 +203,8 @@ div[data-testid="stButton"] button:disabled {{
 </div>
 """
 
-# 이미지 로딩 실패에 대비한 안전 장치 문구 처리
 if not img_base64:
-    st.error(f"⚠️ 폴더 안에서 '{IMAGE_PATH}' 파일을 찾을 수 없습니다! 이미지 파일 이름을 확인해주세요.")
+    st.error("⚠️ 배경 이미지 파일을 읽지 못했습니다. 'pages' 폴더 안에 'multiple_background.png' 파일이 있는지 다시 한 번 확인해 주세요!")
 
 st.markdown(background_html, unsafe_allow_html=True)
 
