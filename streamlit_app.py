@@ -102,9 +102,11 @@ st.markdown("""
         box-shadow: 0 5px 10px rgba(0,0,0,0.05); margin-bottom: 10px;
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
+    
+    /* 🛠️ 로그인 박스 테두리 및 그림자 제거 완료 */
     .login-box {
         background: white; padding: 30px; border-radius: 20px;
-        border: 4px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-top: 50px; text-align: center;
+        margin-top: 50px; text-align: center;
     }
     </style>
 """, unsafe_allow_html=True)
