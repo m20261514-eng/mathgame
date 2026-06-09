@@ -5,7 +5,6 @@ import json
 
 st.set_page_config(page_title="신비의 알 역곱셈 퀘스트", page_icon="🥚", layout="centered")
 
-# 로그인 튕김 방지 안전 가드
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.warning("로그인이 필요합니다. 메인 페이지로 돌아가세요!")
     if st.button("🏠 메인 로비로 이동"): st.switch_page("streamlit_app.py")
@@ -60,90 +59,64 @@ def start_gacha():
 
 st.markdown("""
     <style>
-    /* 전체 기본 글자색을 아주 선명하고 어두운 검은색으로 고정 */
     .stApp { background-color: #FFFDF0; color: #111111 !important; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     
-    /* 🎯 퀴즈 박스 글자색: 흐릿한 색상에서 완전한 진한 검은색(#111111)으로 수정 */
+    /* 📱 [모바일 3열 강제 유지 핵심 치트] */
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+    [data-testid="stHorizontalBlock"] > div {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
+    
     .quiz-box { 
-        background: white; 
-        padding: 25px; 
-        border-radius: 25px; 
-        text-align: center; 
-        font-size: 42px; 
-        font-weight: bold; 
-        color: #111111 !important; 
-        border: 5px solid #FFD93D; 
-        box-shadow: 0px 8px 0px #FFD93D55; 
-        margin-bottom: 30px; 
+        background: white; padding: 25px; border-radius: 25px; text-align: center; 
+        font-size: 42px; font-weight: bold; color: #111111 !important; 
+        border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 30px; 
     }
     
     @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
     .egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
-    
-    /* 🥚 결과 확인 카드 글자색 선명하게 조정 */
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
     .animal-icon { font-size: 100px; margin-bottom: 10px; }
     .animal-name { font-size: 32px; font-weight: bold; color: #111111 !important; }
     
-    /* 📊 상단 대보드 글자색: 기존 흐릿한 초록색에서 선명하고 아주 깊은 다크 그린(#044E34)으로 변경 */
     .dashboard { 
-        background: #E3FAFC; 
-        padding: 15px; 
-        border-radius: 20px; 
-        border: 3px solid #099268; 
-        font-size: 22px; 
-        font-weight: bold; 
-        color: #044E34 !important; 
-        display: flex; 
-        justify-content: space-between; 
+        background: #E3FAFC; padding: 15px; border-radius: 20px; border: 3px solid #099268; 
+        font-size: 22px; font-weight: bold; color: #044E34 !important; display: flex; justify-content: space-between; 
     }
     
-    /* ⌨️ 숫자 키패드 글자색: 흐릿한 회색(#4A4A4A)에서 완전 찐한 검은색(#111111)으로 수정 */
+    /* ⌨️ 입체 계산기 키패드 공통 스타일 */
     div[data-testid="stButton"] button { 
-        font-size: 32px !important; 
-        font-weight: bold !important;
-        border-radius: 18px !important; 
-        background-color: #FFD93D !important; 
-        color: #111111 !important; /* 글자색 전면 수정 */
-        height: 68px !important; 
-        width: 100% !important; 
-        border: none !important;
-        box-shadow: 0px 6px 0px #D6B21E !important; 
+        font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
+        background-color: #FFD93D !important; color: #111111 !important; height: 68px !important; 
+        width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #D6B21E !important; 
         transition: all 0.05s ease-in-out !important;
     }
     div[data-testid="stButton"] button:hover { background-color: #FFE169 !important; }
-    div[data-testid="stButton"] button:active {
-        transform: translateY(4px) !important;
-        box-shadow: 0px 2px 0px #D6B21E !important;
-    }
+    div[data-testid="stButton"] button:active { transform: translateY(4px) !important; box-shadow: 0px 2px 0px #D6B21E !important; }
     div[data-testid="stButton"] button:disabled {
-        background-color: #FFD93D !important;
-        color: #111111 !important;
-        box-shadow: 0px 6px 0px #D6B21E !important;
-        transform: none !important;
-        cursor: not-allowed !important;
-        opacity: 0.85 !important;
+        background-color: #FFD93D !important; color: #111111 !important; box-shadow: 0px 6px 0px #D6B21E !important;
+        transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
     }
 
-    /* 🏠 로비로 가기 글자색은 흰색 유지하되 굵기 강조 */
+    /* 🏠 상단 네비바 버튼 전용 */
     .lobby-btn button { 
-        background-color: #1E293B !important; /* 조금 더 어두운 곤색으로 패널 대비 상승 */
-        color: #FFFFFF !important; 
-        height: 45px !important; 
-        font-size: 18px !important; 
-        box-shadow: 0px 4px 0px #0F172A !important;
-        font-weight: bold !important;
+        background-color: #1E293B !important; color: #FFFFFF !important; height: 45px !important; 
+        font-size: 18px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
     }
-    .lobby-btn button:active {
-        transform: translateY(3px) !important;
-        box-shadow: 0px 1px 0px #0F172A !important;
-    }
+    .lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #0F172A !important; }
     </style>
 """, unsafe_allow_html=True)
 
 cols_nav = st.columns([3, 1])
-with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
+with cols_nav[0]: st.title("⚔️ 역곱셈 훈련장")
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
@@ -153,7 +126,6 @@ with cols_nav[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
-# --- 알뽑기 애니메이션 및 결과창 구역 ---
 if st.session_state.gacha_step == "shaking":
     st.markdown("<span class='egg-shaking'>🥚</span>", unsafe_allow_html=True)
     time.sleep(2.0)
@@ -181,13 +153,11 @@ elif st.session_state.gacha_step == "revealed":
             force_file_save()
             st.switch_page("streamlit_app.py")
 
-# --- 메인 게임 구역 ---
 if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
     if st.session_state.status == "hint":
-        # 🚨 모바일 시인성을 위해 힌트 빨간색을 더 쨍하고 선명한 딥레드(#E03131)로 고정
         p1 = f"<span style='color: #E03131; font-weight: 900;'>{st.session_state.factor1}</span>"
         p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
     else:
@@ -198,10 +168,10 @@ if st.session_state.gacha_step == "idle":
 
     is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
 
-    # ⌨️ 숫자 키패드 구역
+    # ⌨️ [계산기 배열 구조 패치]
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
-        pad_cols = st.columns(3)
+        pad_cols = st.columns(3)  # 무조건 모바일에서도 깨지지 않고 3칸 유지
         for i, num in enumerate(row):
             if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
                 if len(st.session_state.inputs) < 2:
@@ -209,6 +179,7 @@ if st.session_state.gacha_step == "idle":
                     st.session_state.is_answered = True
                     st.rerun()
 
+    # 4열: 하단에 꽉 차게 들어가는 긴 지우기 패널
     if st.button("⌫ 지우기", use_container_width=True, disabled=is_keyboard_locked):
         if st.session_state.status == "hint":
             st.session_state.inputs = []
@@ -227,12 +198,10 @@ if st.session_state.gacha_step == "idle":
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
             reward = random.randint(8, 13)
-            
             st.session_state.gold += reward
             st.session_state.game_score += 1
             st.session_state.last_reward = reward
             st.session_state.status = "correct_waiting"
-            
             force_file_save()
             st.rerun()
         else:
