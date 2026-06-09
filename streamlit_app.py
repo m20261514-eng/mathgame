@@ -86,7 +86,6 @@ for tier in divide_animals.values(): all_animals.extend(tier)
 
 
 # --- 🌌 어두운 네이비 & 새벽빛 테마 CSS 스타일링 ---
-# [완벽 복구] 배경 레이어는 살리고, 제목 밑의 빈 테두리 박스 컴포넌트만 쏙 골라 지웠습니다.
 background_html = f"""
 <div class="custom-lobby-bg"></div>
 <div class="dawn-particles-bg">
@@ -94,19 +93,18 @@ background_html = f"""
 </div>
 
 <style>
-/* 🚨 [오류 수정] 배경화면을 숨기지 않고, 마크다운 빈 컴포넌트 블록의 테두리만 숨김 처리 */
-div[data-testid="stMarkdownContainer"] {{
+/* 🎯 [투명 박스 완전 격리] 마크다운과 그 바깥 감싸는 Streamlit 컨테이너들의 선/배경을 원천 차단합니다 */
+div[data-testid="stMarkdownContainer"], 
+div[data-testid="element-container"],
+div[data-style="stBlock"],
+.stMarkdown {{
     border: none !important;
     background: transparent !important;
-    box-shadow: none !important;
-}}
-/* Streamlit 내부의 불필요한 빈 래퍼 테두리 선 삭제 */
-div[data-style="stBlock"] {{
-    border: none !important;
+    background-color: transparent !important;
     box-shadow: none !important;
 }}
 
-/* 1. 배경화면 고정 레이어 */
+/* 1. 배경화면 고정 레이어 (복구 상태 유지) */
 .custom-lobby-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -186,12 +184,12 @@ section.main,
 .guide-text br {{ display: none; }}
 @media (max-width: 600px) {{ .guide-text br {{ display: inline !important; }} }}
 
-/* 🔑 로그인 박스 */
+/* 🔑 로그인 박스 (독립적인 실선 테두리 제공) */
 .login-box {{
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(15, 23, 42, 0.85) !important;
     padding: 30px;
     border-radius: 25px;
-    border: 2px solid #475569;
+    border: 2px solid #475569 !important;
     box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
     margin-top: 5px;
 }}
@@ -263,7 +261,7 @@ if not st.session_state.logged_in:
     st.subheader("🔑 새벽의 빛을 따라온 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 새로운 차원의 문을 열어보세요!")
     
-    input_pin = st.text_input("숫자 핀번호 입력 (예: 나의 반 번호 + 좋아하는 숫자 등)", type="password", key="pin_input")
+    input_pin = st.text_input("숫자 핀번호 입력 (예: 나의 학년 반 번호 + 좋아하는 숫자 등)", type="password", key="pin_input")
     
     if st.button("🚀 차원의 문 입장하기", use_container_width=True):
         if input_pin.strip() == "":
