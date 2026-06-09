@@ -226,19 +226,20 @@ else:
     st.markdown("### 🦁 나의 신비한 동물 도감")
     st.write(f"📊 **전체 마스터 등급 수집률:** {len(st.session_state.my_collection)} / {len(all_animals)} 마리")
 
+# ⚠️ 위쪽의 기존 코드들과 들여쓰기 라인이 똑같이 맞아야 합니다.
     tab1, tab2 = st.tabs(["🐣 역곱셈 도감", "🤿 나눗셈 도감"])
 
-def draw_zoo_grid(animal_dict):
+    def draw_zoo_grid(animal_dict):
         for tier, title_list in animal_dict.items():
             st.markdown(f"<div class='tier-title'>{tier}</div>", unsafe_allow_html=True)
             cols = st.columns(4)
             for idx, animal_string in enumerate(title_list):
                 col_target = cols[idx % 4]
                 
-                # 💡 [이름 복원 패치] 공백으로 쪼갠 후, 첫 번째 이모지를 제외한 나머지를 다시 하나로 묶습니다.
+                # 공백으로 쪼갠 후 이모지를 제외한 원래 이름 전체 복원
                 parts = animal_string.split()
                 emoji = parts[0]
-                name = " ".join(parts[1:]) # "아기", "펭귄" -> "아기 펭귄"으로 복원!
+                name = " ".join(parts[1:])
                 
                 if animal_string in st.session_state.my_collection:
                     card_html = f"<div class='animal-card-unlocked'><span class='animal-emoji'>{emoji}</span>{name}</div>"
@@ -246,6 +247,11 @@ def draw_zoo_grid(animal_dict):
                     card_html = f"<div class='animal-card-locked'><span class='animal-emoji' style='filter: grayscale(100%);'>❓</span>🔒 미획득</div>"
                 col_target.markdown(card_html, unsafe_allow_html=True)
 
-    with tab1: draw_zoo_grid(multiply_animals)
-    with tab2: draw_zoo_grid(divide_animals)
+    # 💡 이 아래 두 줄의 시작 위치(들여쓰기)가 tab1, tab2 정의한 라인과 똑같아야 합니다!
+    with tab1: 
+        draw_zoo_grid(multiply_animals)
+        
+    with tab2: 
+        draw_zoo_grid(divide_animals)
+
     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
