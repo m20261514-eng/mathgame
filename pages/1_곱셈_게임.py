@@ -77,12 +77,12 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- 🌲 [초강력 수정] HTML 직접 삽입 및 무조건 투명화 CSS 🌲 ---
+# --- ✂️ [나뭇잎 삭제 완료] 깔끔한 배경 전용 CSS ✂️ ---
 background_html = f"""
 <div class="custom-magic-bg"></div>
 
 <style>
-/* 1. 배경화면 전용 완전 고정 레이어 (블러 + 어둡게) */
+/* 1. 배경화면 고정 레이어 */
 .custom-magic-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -93,11 +93,11 @@ background_html = f"""
     background-position: center center !important;
     background-size: cover !important;
     filter: blur(6px) brightness(0.5); 
-    z-index: -3; /* 모든 Streamlit 요소보다 아래에 배치 */
+    z-index: -3; 
     pointer-events: none;
 }}
 
-/* 2. Streamlit의 모든 하얀색 판때기들을 모조리 투명하게 뚫어버림 */
+/* 2. Streamlit 레이어 투명화 */
 .stApp, 
 section.main,
 [data-testid="stAppViewContainer"], 
@@ -109,53 +109,34 @@ section.main,
     background: transparent !important;
 }}
 
-/* 3. 흔들리는 나뭇잎 & 금빛 입자 컨테이너 */
+/* 3. 특수효과 컨테이너 */
 .magic-forest-bg {{
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: -1; pointer-events: none; overflow: hidden;
 }}
 
-/* 4. 금빛 반짝이 애니메이션 */
+/* 4. 은은한 금빛 반짝이 (정신 사납지 않게 아주 작고 조용하게 흩날림) */
 .gold-particles {{
-    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
     background: transparent;
     box-shadow: 
         10vw 20vh #FFD700, 30vw 40vh #FFDF00, 50vw 80vh #FFF8DC, 
         70vw 10vh #FFD700, 90vw 60vh #FFDF00, 20vw 80vh #FFF8DC,
-        40vw 15vh #FFD700, 80vw 35vh #FFDF00, 60vw 90vh #FFF8DC,
-        15vw 50vh #FFD700, 85vw 70vh #FFF8DC, 45vw 90vh #FFDF00;
-    animation: floatUp 15s linear infinite;
-    opacity: 0.6; filter: blur(1px);
+        40vw 15vh #FFD700, 80vw 35vh #FFDF00, 60vw 90vh #FFF8DC;
+    animation: floatUp 20s linear infinite;
+    opacity: 0.4; filter: blur(0.5px);
 }}
 .gold-particles::after {{
-    content: ""; position: absolute; top: 100vh; width: 4px; height: 4px;
+    content: ""; position: absolute; top: 100vh; width: 3px; height: 3px;
     background: transparent; box-shadow: inherit;
 }}
 @keyframes floatUp {{
-    0% {{ transform: translateY(0); opacity: 0.8; }}
-    50% {{ opacity: 0.3; }}
-    100% {{ transform: translateY(-100vh); opacity: 0.8; }}
+    0% {{ transform: translateY(0); opacity: 0.5; }}
+    50% {{ opacity: 0.2; }}
+    100% {{ transform: translateY(-100vh); opacity: 0.5; }}
 }}
 
-/* 5. 살랑살랑 떨어지는 나뭇잎 애니메이션 */
-.leaf {{
-    position: absolute; font-size: 24px; animation: swayAndFall linear infinite; opacity: 0.8;
-}}
-.leaf:nth-child(2) {{ left: 10%; top: -10%; animation-duration: 12s; animation-delay: 0s; }}
-.leaf:nth-child(3) {{ left: 30%; top: -10%; animation-duration: 15s; animation-delay: 3s; font-size: 18px; }}
-.leaf:nth-child(4) {{ left: 60%; top: -10%; animation-duration: 11s; animation-delay: 1s; font-size: 28px; }}
-.leaf:nth-child(5) {{ left: 80%; top: -10%; animation-duration: 16s; animation-delay: 5s; }}
-.leaf:nth-child(6) {{ left: 45%; top: -10%; animation-duration: 14s; animation-delay: 7s; font-size: 20px;}}
-
-@keyframes swayAndFall {{
-    0% {{ transform: translateY(-10vh) rotate(0deg) translateX(0); }}
-    25% {{ transform: translateY(25vh) rotate(45deg) translateX(30px); }}
-    50% {{ transform: translateY(50vh) rotate(90deg) translateX(-20px); }}
-    75% {{ transform: translateY(75vh) rotate(135deg) translateX(40px); }}
-    100% {{ transform: translateY(110vh) rotate(180deg) translateX(-30px); }}
-}}
-
-/* 기존 컴포넌트 스타일 유지 */
+/* 기존 컴포넌트 디자인 유지 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
 @media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
@@ -201,15 +182,9 @@ div[data-testid="stButton"] button:disabled {{
 
 <div class="magic-forest-bg">
     <div class="gold-particles"></div>
-    <div class="leaf">🍃</div>
-    <div class="leaf">🌿</div>
-    <div class="leaf">🍃</div>
-    <div class="leaf">🍂</div>
-    <div class="leaf">🌿</div>
 </div>
 """
 
-# 🛠️ 만약 컴퓨터가 이미지를 아예 못 읽으면 상단에 명확하게 빨간 에러창을 띄워주는 안전장치
 if not img_base64:
     st.error("🚨 [파일 인식 실패] 'pages' 폴더 안에 'multiple_background.png' 파일이 없는 것 같습니다. 철자가 완벽히 똑같은지 다시 확인해 주세요!")
 
