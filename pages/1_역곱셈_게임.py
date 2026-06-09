@@ -135,11 +135,19 @@ elif st.session_state.gacha_step == "revealed":
     st.markdown("<div class='reveal-card'>", unsafe_allow_html=True)
     if "전설" in tier: st.balloons()
     st.markdown(f"<div class='animal-icon'>{animal.split()[0]}</div><div class='animal-name'>[{tier}] {animal.split()[-1]}</div></div>", unsafe_allow_html=True)
-    if st.button("확인 (도감으로 가기)", use_container_width=True):
-        st.session_state.gacha_step = "idle"
-        force_file_save()
-        st.switch_page("streamlit_app.py")
-
+   # 🛠️ 버튼 분리: 확인(계속하기) vs 도감 보러가기
+    col_confirm1, col_confirm2 = st.columns(2)
+    with col_confirm1:
+        if st.button("확인", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            force_file_save()
+            st.rerun()  # 훈련장에 그대로 남음
+    with col_confirm2:
+        if st.button("도감 보기", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            force_file_save()
+            st.switch_page("streamlit_app.py") # 로비로 이동
+            
 if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
