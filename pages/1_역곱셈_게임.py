@@ -66,18 +66,59 @@ st.markdown("""
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
     .animal-icon { font-size: 100px; margin-bottom: 10px; }
     .animal-name { font-size: 32px; font-weight: bold; }
-    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; }
-    div[data-testid="stButton"] button { font-size: 28px !important; border-radius: 15px !important; background-color: #FFD93D !important; color: #4A4A4A !important; height: 65px !important; width: 100% !important; }
-    .lobby-btn button { background-color: #475569 !important; color: white !important; height: 45px !important; font-size: 18px !important; }
+    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    
+    /* 🛠️ [도각도각 기본 노란색 입체 버튼 디자인] */
+    div[data-testid="stButton"] button { 
+        font-size: 32px !important; 
+        font-weight: bold !important;
+        border-radius: 18px !important; 
+        background-color: #FFD93D !important; 
+        color: #222222 !important; 
+        height: 68px !important; 
+        width: 100% !important; 
+        border: none !important;
+        
+        /* 입체감을 살리는 찐한 노란색 아랫쪽 입체 테두리(그림자) */
+        box-shadow: 0px 6px 0px #D6B21E !important; 
+        transition: all 0.05s ease-in-out !important;
+    }
+    
+    /* 버튼 위에 마우스를 슬쩍 올렸을 때 색상 변화 */
+    div[data-testid="stButton"] button:hover {
+        background-color: #FFE169 !important;
+    }
+
+    /* 💥 [핵심] 버튼을 터치/클릭하여 꾹 눌렀을 때 도각 하고 내려앉는 모션 효과 */
+    div[data-testid="stButton"] button:active {
+        transform: translateY(4px) !important; /* 아래로 4픽셀 쏙 내려감 */
+        box-shadow: 0px 2px 0px #D6B21E !important; /* 밑면 테두리도 얇아짐 */
+    }
+
+    /* 우측 상단 '로비로' 가는 버튼 전용 디자인 (이건 너무 커지지 않게 원래 비율 유지) */
+    .lobby-btn button { 
+        background-color: #475569 !important; 
+        color: white !important; 
+        height: 45px !important; 
+        font-size: 18px !important; 
+        box-shadow: 0px 4px 0px #334155 !important;
+    }
+    .lobby-btn button:active {
+        transform: translateY(3px) !important;
+        box-shadow: 0px 1px 0px #334155 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 cols_nav = st.columns([3, 1])
 with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
 with cols_nav[1]:
+    # CSS 클래스를 깔끔하게 먹이기 위해 전용 div로 감싸줍니다.
+    st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
         force_file_save()
         st.switch_page("streamlit_app.py")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
@@ -113,7 +154,7 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
-    # [수정 부분 1] 정답을 맞혔을 때의 화면 연출 및 대기 처리 분리
+    # 정답을 맞혔을 때의 화면 연출 및 대기 처리 분리
     if st.session_state.status == "correct":
         st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)  # 축하 메시지를 보여주는 지연 시간 (이 동안 패드는 숨겨짐)
@@ -136,7 +177,7 @@ if st.session_state.gacha_step == "idle":
                 st.session_state.inputs.pop()
             st.rerun()
 
-    # [수정 부분 2] 입력 완료 시 검증 로직 변경 (중복 클릭 원천 차단)
+    # 입력 완료 시 검증 로직 변경 (중복 클릭 원천 차단)
     if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and st.session_state.is_answered:
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
