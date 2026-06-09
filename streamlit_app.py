@@ -86,7 +86,7 @@ for tier in divide_animals.values(): all_animals.extend(tier)
 
 
 # --- 🌌 어두운 네이비 & 새벽빛 테마 CSS 스타일링 ---
-# [치유 완료] 마크다운 블록이 빈 레이아웃을 잡지 않도록 'display: none' 처리와 레이어 재조정을 적용했습니다.
+# [완벽 복구] 배경 레이어는 살리고, 제목 밑의 빈 테두리 박스 컴포넌트만 쏙 골라 지웠습니다.
 background_html = f"""
 <div class="custom-lobby-bg"></div>
 <div class="dawn-particles-bg">
@@ -94,9 +94,16 @@ background_html = f"""
 </div>
 
 <style>
-/* Streamlit이 빈 마크다운 컴포넌트에 테두리나 패딩을 주지 않도록 원천 차단 */
-div[data-testid="stMarkdownContainer"] > div:empty {{
-    display: none !important;
+/* 🚨 [오류 수정] 배경화면을 숨기지 않고, 마크다운 빈 컴포넌트 블록의 테두리만 숨김 처리 */
+div[data-testid="stMarkdownContainer"] {{
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}}
+/* Streamlit 내부의 불필요한 빈 래퍼 테두리 선 삭제 */
+div[data-style="stBlock"] {{
+    border: none !important;
+    box-shadow: none !important;
 }}
 
 /* 1. 배경화면 고정 레이어 */
@@ -244,7 +251,7 @@ div[data-testid="stTextInput"] input {{
 if not img_base64:
     st.error("🚨 [파일 인식 실패] 폴더 안에 'main_background.png' 파일이 없는 것 같습니다. 파일명을 확인해 주세요!")
 
-# 배경 및 스타일 적용 (가장 먼저 한 번만 렌더링되게 합쳤습니다)
+# 배경 및 스타일 적용
 st.markdown(background_html, unsafe_allow_html=True)
 
 # 메인 타이틀 출력
