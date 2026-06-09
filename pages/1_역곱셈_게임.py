@@ -129,7 +129,7 @@ if st.session_state.gacha_step == "idle":
                 st.session_state.inputs.pop()
             st.rerun()
 
-    if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and not st.session_state.is_answered:
+    if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and st.session_state.is_answered:
         time.sleep(0.4)
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
@@ -137,12 +137,11 @@ if st.session_state.gacha_step == "idle":
             st.success(f"🎉 정답! +{reward}G 획득!")
             st.session_state.game_score += 1
             st.session_state.gold += reward
-            st.session_state.is_answered = True
             force_file_save()
             time.sleep(1.2)
             next_question()
             st.rerun()
         else:
             st.session_state.status = "hint"
-            st.session_state.is_answered = True
+            st.session_state.inputs = [st.session_state.factor1]
             st.rerun()
