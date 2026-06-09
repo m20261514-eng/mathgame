@@ -132,9 +132,16 @@ if st.session_state.gacha_step == "shaking":
     st.rerun()
 elif st.session_state.gacha_step == "revealed":
     tier, animal = st.session_state.revealed_animal
-    st.markdown("<div class='reveal-card'>", unsafe_allow_html=True)
-    if "전설" in tier: st.balloons()
-    st.markdown(f"<div class='animal-icon'>{animal.split()[0]}</div><div class='animal-name'>[{tier}] {animal.split()[-1]}</div></div>", unsafe_allow_html=True)
+  # 💥 하나의 HTML 마크다운 안에서 상자를 열고, 동물 정보를 넣고, 상자를 닫도록 합쳤습니다!
+    st.markdown(f"""
+        <div class='reveal-card'>
+            <div class='animal-icon'>{animal.split()[0]}</div>
+            <div class='animal-name'>[{tier}] {animal.split()[-1]}</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if "전설" in tier: 
+        st.balloons()
    # 🛠️ 버튼 분리: 확인(계속하기) vs 도감 보러가기
     col_confirm1, col_confirm2 = st.columns(2)
     with col_confirm1:
