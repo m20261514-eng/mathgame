@@ -2,8 +2,23 @@ import streamlit as st
 import random
 import time
 import json
+import base64  # 🛠️ 로컬 이미지를 불러오기 위한 라이브러리 추가
 
 st.set_page_config(page_title="마법의 숲 곱셈 퀘스트", page_icon="🌿", layout="centered")
+
+# 🛠️ [내가 원하는 이미지 설정] 같은 폴더에 있는 이미지 파일 이름을 적어주세요!
+IMAGE_PATH = "multiple_background.png" 
+
+# 이미지를 세션 상태 주입용 Base64로 변환하는 함수
+def get_base64_image(img_path):
+    try:
+        with open(img_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        return ""
+
+img_base64 = get_base64_image(IMAGE_PATH)
 
 # 로그인 체크 분기
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
@@ -23,7 +38,7 @@ def next_question():
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_answer = st.session_state.factor1 * st.session_state.factor2
     st.session_state.inputs = []
-    st.session_state.status = "playing" # 게임 상태 초기화 (키보드 잠금 해제)
+    st.session_state.status = "playing" 
 
 # 세션 상태 초기화
 if "game_score" not in st.session_state: st.session_state.game_score = 0
@@ -60,29 +75,40 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- 🌲 [핵심 수정] 마법의 숲 애니메이션 및 흐릿한 배경 CSS 🌲 ---
-st.markdown("""
+# --- 🌲 [핵심 수정] 완벽한 레이어 붕괴 방지 및 로컬 배경 내장 CSS 🌲 ---
+background_html = f"""
 <style>
-/* 1. 배경 이미지 + 블러 및 어둡게 처리 */
-.stApp::before {
+/* 1. 최상위 앱 컨테이너에 의사 요소를 주어 배경 고정 및 블러/밝기 조절 */
+[data-testid="stAppViewContainer"]::before {{
     content: "";
     position: fixed;
     top: -5%; left: -5%; width: 110%; height: 110%;
-    background: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=1920&auto=format&fit=crop') no-repeat center center;
+    background-image: url("data:image/webp;base64,{img_base64}");
+    background-repeat: no-repeat;
+    background-position: center center;
     background-size: cover;
-    filter: blur(8px) brightness(0.5); /* 블러 처리 및 텍스트 가독성을 위해 어둡게 */
+    filter: blur(8px) brightness(0.5); /* 🛠️ 여기서 블러 세기(8px)와 밝기(0.5) 조절 가능 */
     z-index: -2;
-}
-[data-testid="stAppViewContainer"], [data-testid="stMain"] { background: transparent; }
+}}
 
-/* 2. 흔들리는 나뭇잎 & 금빛 입자 컨테이너 */
-.magic-forest-bg {
+/* 2. 배경을 가로막는 모든 중간 레이어판들을 강제로 투명화 */
+[data-testid="stAppViewContainer"], 
+[data-testid="stHeader"], 
+[data-testid="stMainViewContainer"], 
+[data-testid="stMain"],
+[data-testid="stDecoration"] {{
+    background-color: transparent !important;
+    background: transparent !important;
+}}
+
+/* 3. 흔들리는 나뭇잎 & 금빛 입자 컨테이너 */
+.magic-forest-bg {{
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: -1; pointer-events: none; overflow: hidden;
-}
+}}
 
-/* 3. 금빛 반짝이 애니메이션 (Box-shadow 활용) */
-.gold-particles {
+/* 4. 금빛 반짝이 애니메이션 */
+.gold-particles {{
     position: absolute; width: 4px; height: 4px; border-radius: 50%;
     background: transparent;
     box-shadow: 
@@ -92,77 +118,77 @@ st.markdown("""
         15vw 50vh #FFD700, 85vw 70vh #FFF8DC, 45vw 90vh #FFDF00;
     animation: floatUp 15s linear infinite;
     opacity: 0.6; filter: blur(1px);
-}
-.gold-particles::after {
+}}
+.gold-particles::after {{
     content: ""; position: absolute; top: 100vh; width: 4px; height: 4px;
     background: transparent; box-shadow: inherit;
-}
-@keyframes floatUp {
-    0% { transform: translateY(0); opacity: 0.8; }
-    50% { opacity: 0.3; }
-    100% { transform: translateY(-100vh); opacity: 0.8; }
-}
+}}
+@keyframes floatUp {{
+    0% {{ transform: translateY(0); opacity: 0.8; }}
+    50% {{ opacity: 0.3; }}
+    100% {{ transform: translateY(-100vh); opacity: 0.8; }}
+}}
 
-/* 4. 살랑살랑 떨어지는 나뭇잎 애니메이션 */
-.leaf {
+/* 5. 살랑살랑 떨어지는 나뭇잎 애니메이션 */
+.leaf {{
     position: absolute; font-size: 24px; animation: swayAndFall linear infinite; opacity: 0.8;
-}
-.leaf:nth-child(2) { left: 10%; top: -10%; animation-duration: 12s; animation-delay: 0s; }
-.leaf:nth-child(3) { left: 30%; top: -10%; animation-duration: 15s; animation-delay: 3s; font-size: 18px; }
-.leaf:nth-child(4) { left: 60%; top: -10%; animation-duration: 11s; animation-delay: 1s; font-size: 28px; }
-.leaf:nth-child(5) { left: 80%; top: -10%; animation-duration: 16s; animation-delay: 5s; }
-.leaf:nth-child(6) { left: 45%; top: -10%; animation-duration: 14s; animation-delay: 7s; font-size: 20px;}
+}}
+.leaf:nth-child(2) {{ left: 10%; top: -10%; animation-duration: 12s; animation-delay: 0s; }}
+.leaf:nth-child(3) {{ left: 30%; top: -10%; animation-duration: 15s; animation-delay: 3s; font-size: 18px; }}
+.leaf:nth-child(4) {{ left: 60%; top: -10%; animation-duration: 11s; animation-delay: 1s; font-size: 28px; }}
+.leaf:nth-child(5) {{ left: 80%; top: -10%; animation-duration: 16s; animation-delay: 5s; }}
+.leaf:nth-child(6) {{ left: 45%; top: -10%; animation-duration: 14s; animation-delay: 7s; font-size: 20px;}}
 
-@keyframes swayAndFall {
-    0% { transform: translateY(-10vh) rotate(0deg) translateX(0); }
-    25% { transform: translateY(25vh) rotate(45deg) translateX(30px); }
-    50% { transform: translateY(50vh) rotate(90deg) translateX(-20px); }
-    75% { transform: translateY(75vh) rotate(135deg) translateX(40px); }
-    100% { transform: translateY(110vh) rotate(180deg) translateX(-30px); }
-}
+@keyframes swayAndFall {{
+    0% {{ transform: translateY(-10vh) rotate(0deg) translateX(0); }}
+    25% {{ transform: translateY(25vh) rotate(45deg) translateX(30px); }}
+    50% {{ transform: translateY(50vh) rotate(90deg) translateX(-20px); }}
+    75% {{ transform: translateY(75vh) rotate(135deg) translateX(40px); }}
+    100% {{ transform: translateY(110vh) rotate(180deg) translateX(-30px); }}
+}}
 
-/* --- 기존 UI 스타일링 --- */
-.game-title { font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }
-@media (min-width: 600px) { .game-title { font-size: 2.1rem !important; } }
+/* 기존 컴포넌트 스타일 유지 */
+.game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
+@media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
-[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }
-[data-testid="stHorizontalBlock"] > div { flex: 1 1 0% !important; min-width: 0 !important; }
+[data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
+[data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
-.quiz-box { 
+.quiz-box {{ 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #1B4332 !important; 
     border: 5px solid #74C69D; box-shadow: 0px 8px 15px rgba(0,0,0,0.4); margin-bottom: 30px; 
-}
-.dashboard { 
+}}
+.dashboard {{ 
     background: rgba(232, 245, 233, 0.9); padding: 15px; border-radius: 20px; border: 3px solid #2D6A4F; 
     font-size: 22px; font-weight: bold; color: #1B4332 !important; display: flex; justify-content: space-between; 
     box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
-}
+}}
 
-div[data-testid="stButton"] button { 
+div[data-testid="stButton"] button {{ 
     font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #40916C !important; color: #FFFFFF !important; height: 68px !important; 
     width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #1B4332 !important; 
     transition: all 0.05s ease-in-out !important;
-}
-div[data-testid="stButton"] button:hover { background-color: #52B788 !important; }
-div[data-testid="stButton"] button:active { transform: translateY(4px) !important; box-shadow: 0px 2px 0px #1B4332 !important; }
-div[data-testid="stButton"] button:disabled {
+}}
+div[data-testid="stButton"] button:hover {{ background-color: #52B788 !important; }}
+div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 2px 0px #1B4332 !important; }}
+div[data-testid="stButton"] button:disabled {{
     background-color: #74C69D !important; color: #FFFFFF !important; box-shadow: 0px 6px 0px #40916C !important;
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
-}
+}}
 
-.lobby-btn button { 
+.lobby-btn button {{ 
     background-color: rgba(27, 67, 50, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 17px !important; box-shadow: 0px 4px 0px #081C15 !important; font-weight: bold !important;
-}
-.lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #081C15 !important; }
+}}
+.lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #081C15 !important; }}
 
-@keyframes leaf-vibrate { 0% { transform: translate(0) rotate(0deg); } 20% { transform: translate(-4px, 4px) rotate(-3deg); } 40% { transform: translate(-4px, -4px) rotate(3deg); } 60% { transform: translate(4px, 4px) rotate(-3deg); } 80% { transform: translate(-4px, -4px) rotate(3deg); } 100% { transform: translate(0) rotate(0deg); } }
-.capsule-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: leaf-vibrate 0.14s linear infinite; }
-.reveal-card { background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }
-.animal-icon { font-size: 100px; margin-bottom: 10px; }
-.animal-name { font-size: 32px; font-weight: bold; color: #1B4332 !important; }
+@keyframes leaf-vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-4px, 4px) rotate(-3deg); }} 40% {{ transform: translate(-4px, -4px) rotate(3deg); }} 60% {{ transform: translate(4px, 4px) rotate(-3deg); }} 80% {{ transform: translate(-4px, -4px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
+.capsule-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: leaf-vibrate 0.14s linear infinite; }}
+.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
+.animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
+.animal-name {{ font-size: 32px; font-weight: bold; color: #1B4332 !important; }}
 </style>
 
 <div class="magic-forest-bg">
@@ -173,7 +199,13 @@ div[data-testid="stButton"] button:disabled {
     <div class="leaf">🍂</div>
     <div class="leaf">🌿</div>
 </div>
-""", unsafe_allow_html=True)
+"""
+
+# 이미지 로딩 실패에 대비한 안전 장치 문구 처리
+if not img_base64:
+    st.error(f"⚠️ 폴더 안에서 '{IMAGE_PATH}' 파일을 찾을 수 없습니다! 이미지 파일 이름을 확인해주세요.")
+
+st.markdown(background_html, unsafe_allow_html=True)
 
 # 상단 비율 세팅 및 로비 연결
 cols_nav = st.columns([2.9, 1.1])
