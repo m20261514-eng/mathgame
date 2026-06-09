@@ -78,11 +78,13 @@ st.markdown("""
         border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 25px; 
     }
     
-    .hint-box { 
-        color: #B91C1C !important; font-size: 32px !important; font-weight: bold; text-align: center; 
-        background-color: #FFEBEB; padding: 20px; border-radius: 20px; border: 4px dashed #FF4B4B;
-        box-shadow: 0px 6px 0px #FF4B4B22; margin-top: 15px; margin-bottom: 25px;
-    }
+/* 힌트 박스 디자인 변경 */
+.hint-box {
+  font-family: Arial; /* "정답!" 알림의 폰트 패밀리 */
+  font-size: 20px;    /* "정답!" 알림의 글자 크기 */
+  color: #FF0000;    /* 붉은색 */
+  background-color: transparent; /* 배경색 투명하게 설정 */
+}
     
     @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(5px, -5px); } 100% { transform: translate(0); } }
     .egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
