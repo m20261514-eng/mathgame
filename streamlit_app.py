@@ -175,7 +175,7 @@ st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", uns
 # --- 🔐 로그인 화면 분기 ---
 if not st.session_state.logged_in:
     st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    st.subheader("🔑 모험가 로그인")
+    st.subheader("🔑 끝없는 신비를 찾는 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 이어서 모험을 시작하세요!")
     
     input_pin = st.text_input("숫자 핀번호 입력 (예: 나의 반 번호 + 좋아하는 숫자 등)", type="password", key="pin_input")
@@ -229,7 +229,7 @@ else:
 
     st.write("---")
 
-    st.markdown("### 🦁 나의 신비한 동물 도감")
+    st.markdown("### 🦁 나의 신비 도감")
     st.write(f"📊 **전체 마스터 등급 수집률:** {len(st.session_state.my_collection)} / {len(all_animals)} 마리")
 
     # 도감 탭도 1.곱셈, 2.역곱셈, 3.나눗셈 순서로 분할
