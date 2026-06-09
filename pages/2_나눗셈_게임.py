@@ -24,6 +24,8 @@ def make_division_question():
     st.session_state.inputs = []
     st.session_state.status = "playing"
     st.session_state.is_answered = False
+    if "last_reward" in st.session_state:
+        del st.session_state.last_reward
 
 if 'score' not in st.session_state:
     st.session_state.score = 0
@@ -58,7 +60,7 @@ st.markdown("""
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 25px; }
     
-    /* 🚨 강렬하고 선명한 빨간색 테두리와 글씨의 힌트 박스 */
+    /* 🚨 힌트 박스 스타일 */
     .hint-box { 
         color: #FF4B4B !important; 
         font-size: 36px !important; 
@@ -99,7 +101,7 @@ st.markdown("""
         box-shadow: 0px 2px 0px #D6B21E !important;
     }
 
-    /* 🔒 잠금(비활성화) 상태일 때도 노란색 예쁜 형태는 유지되도록 보정 */
+    /* 🔒 잠금(비활성화) 상태일 때도 형태 유지 */
     div[data-testid="stButton"] button:disabled {
         background-color: #FFD93D !important;
         color: #222222 !important;
@@ -154,7 +156,7 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작!", on_click=start_gacha, use_container_width=True)
     
-    # 🎨 힌트 상태일 때 퀴즈 박스 안의 텍스트가 빨간색 ? 로 표현되도록 연출
+    # 🎨 힌트 상태일 때 물음표 색상 처리
     if st.session_state.status == "hint":
         p_ans = "<span style='color: #FF4B4B;'> ? </span>"
     else:
@@ -162,10 +164,10 @@ if st.session_state.gacha_step == "idle":
         
     st.markdown(f"<div class='quiz-box'>{st.session_state.dividend} ÷ {st.session_state.divisor} = [ {p_ans} ]</div>", unsafe_allow_html=True)
 
-    # 🔒 힌트 대기 상태라면 학생들이 키보드를 더 누르지 못하도록 물리적으로 잠금 처리
-    is_keyboard_locked = (st.session_state.status == "hint")
+    # 🛑 [핵심 버그 수정 1] 정답 정산 중이거나 힌트 출력 중이면 모든 키패드를 강제로 잠금합니다.
+    is_keyboard_locked = (st.session_state.status in ["hint", "correct_waiting"]) or ("last_reward" in st.session_state)
 
-    # ⌨️ 숫자 키패드 생성 (상시 고정)
+    # ⌨️ 숫자 키패드 생성 (상시 고정 및 잠금 연동)
     keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in keypad:
         cols = st.columns(3)
@@ -181,7 +183,7 @@ if st.session_state.gacha_step == "idle":
             st.session_state.inputs.pop()
         st.rerun()
 
-    # 🛑 [틀렸을 때 연출 구역] 붉은색 곱셈식 힌트 박스를 키보드 밑에 띄우고 2.5초 대기 후 원상복구
+    # 🛑 틀렸을 때 곱셈 힌트 연출 구역
     if st.session_state.status == "hint":
         st.markdown(f"<div class='hint-box'>💡 힌트 곱셈식: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
         time.sleep(2.5)
@@ -190,17 +192,25 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
-    # 🟢 [맞았을 때 연출 구역] 
+    # 🟢 [핵심 버그 수정 2] 정답 확정 및 안전한 지연시간 대기 연출 구역
+    if "last_reward" in st.session_state:
+        st.success(f"✅ 정답! +{st.session_state.last_reward}G!")
+        time.sleep(1.2)
+        make_division_question()
+        st.rerun()
+
+    # 정답 제출 검증 로직 변경 (중복 트리거 완전 차단)
     if len(st.session_state.inputs) == 1 and st.session_state.status == "playing" and st.session_state.is_answered:
-        time.sleep(0.4)
         if st.session_state.inputs[0] == st.session_state.correct_answer:
             reward = random.randint(8, 13)
-            st.success(f"✅ 정답! +{reward}G!")
+            
+            # 버튼 클릭 판정이 되자마자 즉시 세션을 고정하고 상태를 바꿉니다.
             st.session_state.score += 1
             st.session_state.gold += reward
+            st.session_state.last_reward = reward  # 임시 금액 저장소 활용
+            st.session_state.status = "correct_waiting" # 다른 유저 액션 차단용 상태값
+            
             force_file_save()
-            time.sleep(1.2)
-            make_division_question()
             st.rerun()
         else:
             st.session_state.status = "hint"
