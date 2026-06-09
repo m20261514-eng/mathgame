@@ -7,7 +7,7 @@ import base64  # 🛠️ 로컬 이미지를 불러오기 위한 라이브러리
 st.set_page_config(page_title="마법의 숲 곱셈 퀘스트", page_icon="🌿", layout="centered")
 
 # 🛠️ [내가 원하는 이미지 설정] 같은 폴더에 있는 이미지 파일 이름을 적어주세요!
-IMAGE_PATH = "multiple_background.png" 
+IMAGE_PATH = "pages/multiple_background.png"
 
 # 이미지를 세션 상태 주입용 Base64로 변환하는 함수
 def get_base64_image(img_path):
