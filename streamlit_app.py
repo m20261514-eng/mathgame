@@ -114,10 +114,10 @@ st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", uns
 # --- 🔐 로그인 화면 분기 ---
 if not st.session_state.logged_in:
     st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    st.subheader("🔑 모험가 로그인 가판대")
+    st.subheader("🔑 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 이어서 모험을 시작하세요!")
     
-    input_pin = st.text_input("숫자 핀번호 입력 (예: 학번4자리 등)", type="password", key="pin_input")
+    input_pin = st.text_input("숫자 핀번호 입력 (예: 자기 생일 + 좋아하는 숫자 등)", type="password", key="pin_input")
     
     if st.button("🚀 모험 입장하기", use_container_width=True):
         if input_pin.strip() == "":
@@ -164,15 +164,6 @@ else:
 
     st.markdown("### 🦁 나의 신비한 동물 도감")
     st.write(f"📊 **전체 마스터 등급 수집률:** {len(st.session_state.my_collection)} / {len(all_animals)} 마리")
-
-    # 시뮬레이터 테스트
-    if st.button("🧪 시뮬레이터: 무작위 동물 1종 강제 해금 테스트", use_container_width=True):
-        chosen = random.choice(all_animals)
-        st.session_state.my_collection.add(chosen)
-        save_user_data()
-        st.success(f"🎉 테스트 부화 완료! [ {chosen} ]")
-        time.sleep(1)
-        st.rerun()
 
     tab1, tab2 = st.tabs(["🐣 역곱셈 도감", "🤿 나눗셈 도감"])
 
