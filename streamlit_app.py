@@ -86,10 +86,19 @@ for tier in divide_animals.values(): all_animals.extend(tier)
 
 
 # --- 🌌 어두운 네이비 & 새벽빛 테마 CSS 스타일링 ---
+# [치유 완료] 마크다운 블록이 빈 레이아웃을 잡지 않도록 'display: none' 처리와 레이어 재조정을 적용했습니다.
 background_html = f"""
 <div class="custom-lobby-bg"></div>
+<div class="dawn-particles-bg">
+    <div class="aurora-lights"></div>
+</div>
 
 <style>
+/* Streamlit이 빈 마크다운 컴포넌트에 테두리나 패딩을 주지 않도록 원천 차단 */
+div[data-testid="stMarkdownContainer"] > div:empty {{
+    display: none !important;
+}}
+
 /* 1. 배경화면 고정 레이어 */
 .custom-lobby-bg {{
     position: fixed;
@@ -137,7 +146,7 @@ section.main,
     100% {{ transform: translateY(-95vh); opacity: 0.3; }}
 }}
 
-/* [수정 완료] f-string 오류 방지를 위해 단일 중괄호 부분을 겹쳐서 {{ }} 로 치환했습니다 */
+/* 글자 텍스트 크로매틱 에버레이션 (새벽의 차원문 느낌 텍스트 연출) */
 @keyframes dimension-shift {{
     0%, 100% {{ text-shadow: -2px 0 rgba(167, 139, 250, 0.8), 2px 0 rgba(147, 197, 253, 0.8), 0 0 15px rgba(0,0,0,0.5); }}
     50% {{ text-shadow: -3px 0 rgba(167, 139, 250, 0.9), 3px 0 rgba(147, 197, 253, 0.9), 0 0 25px rgba(147, 197, 253, 0.4); }}
@@ -148,7 +157,7 @@ section.main,
     font-weight: bold; 
     color: #FFFFFF !important; 
     text-align: center;
-    margin-bottom: 15px; 
+    margin-bottom: 25px; 
     margin-top: 10px; 
     letter-spacing: 2px;
     white-space: nowrap; 
@@ -177,7 +186,7 @@ section.main,
     border-radius: 25px;
     border: 2px solid #475569;
     box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
-    margin-top: 20px;
+    margin-top: 5px;
 }}
 .login-box h3, .login-box p, div[data-testid="stMarkdownContainer"] p {{
     color: #F8FAFC !important;
@@ -230,17 +239,15 @@ div[data-testid="stTextInput"] input {{
     border: 2px solid #475569 !important;
 }}
 </style>
-
-<div class="dawn-particles-bg">
-    <div class="aurora-lights"></div>
-</div>
 """
 
 if not img_base64:
     st.error("🚨 [파일 인식 실패] 폴더 안에 'main_background.png' 파일이 없는 것 같습니다. 파일명을 확인해 주세요!")
 
+# 배경 및 스타일 적용 (가장 먼저 한 번만 렌더링되게 합쳤습니다)
 st.markdown(background_html, unsafe_allow_html=True)
 
+# 메인 타이틀 출력
 st.markdown("<div class='main-title'>🌌 수학 차원 대모험 🧭</div>", unsafe_allow_html=True)
 
 # --- 🔐 로그인 화면 분기 ---
