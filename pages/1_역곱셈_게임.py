@@ -68,9 +68,9 @@ st.markdown("""
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
     .animal-icon { font-size: 100px; margin-bottom: 10px; }
     .animal-name { font-size: 32px; font-weight: bold; }
-    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; }
     
-    /* 🛠️ 도각도각 노란색 입체 버튼 디자인 */
+    /* 입체 버튼 스타일 */
     div[data-testid="stButton"] button { 
         font-size: 32px !important; 
         font-weight: bold !important;
@@ -88,23 +88,20 @@ st.markdown("""
         transform: translateY(4px) !important;
         box-shadow: 0px 2px 0px #D6B21E !important;
     }
-
-    /* 🔒 잠금(비활성화) 상태의 버튼 디자인 가이드 (모양과 색상은 유지하되 도각거림 멈춤) */
     div[data-testid="stButton"] button:disabled {
         background-color: #FFD93D !important;
         color: #222222 !important;
         box-shadow: 0px 6px 0px #D6B21E !important;
         transform: none !important;
         cursor: not-allowed !important;
-        opacity: 0.9 !important;
+        opacity: 0.85 !important;
     }
 
-    /* 우측 상단 '로비로' 가는 버튼 전용 디자인 */
     .lobby-btn button { 
         background-color: #475569 !important; 
         color: white !important; 
         height: 45px !important; 
-        font-size: 25px !important; 
+        font-size: 18px !important; 
         box-shadow: 0px 4px 0px #334155 !important;
     }
     .lobby-btn button:active {
@@ -115,7 +112,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 cols_nav = st.columns([3, 1])
-with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
+with cols_nav[0]: st.title("⚔️ 역곱셈 훈련장")
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
@@ -125,6 +122,7 @@ with cols_nav[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
+# --- 알뽑기 애니메이션 및 결과창 구역 ---
 if st.session_state.gacha_step == "shaking":
     st.markdown("<span class='egg-shaking'>🥚</span>", unsafe_allow_html=True)
     time.sleep(2.0)
@@ -132,87 +130,89 @@ if st.session_state.gacha_step == "shaking":
     st.rerun()
 elif st.session_state.gacha_step == "revealed":
     tier, animal = st.session_state.revealed_animal
-  # 💥 하나의 HTML 마크다운 안에서 상자를 열고, 동물 정보를 넣고, 상자를 닫도록 합쳤습니다!
     st.markdown(f"""
         <div class='reveal-card'>
             <div class='animal-icon'>{animal.split()[0]}</div>
             <div class='animal-name'>[{tier}] {animal.split()[-1]}</div>
         </div>
     """, unsafe_allow_html=True)
+    if "전설" in tier: st.balloons()
     
-    if "전설" in tier: 
-        st.balloons()
-   # 🛠️ 버튼 분리: 확인(계속하기) vs 도감 보러가기
+    # 🛠️ 확인(계속하기) / 도감 보기 버튼 분리 적용
     col_confirm1, col_confirm2 = st.columns(2)
     with col_confirm1:
         if st.button("확인", use_container_width=True):
             st.session_state.gacha_step = "idle"
             force_file_save()
-            st.rerun()  # 훈련장에 그대로 남음
+            st.rerun()
     with col_confirm2:
         if st.button("도감 보기", use_container_width=True):
             st.session_state.gacha_step = "idle"
             force_file_save()
-            st.switch_page("streamlit_app.py") # 로비로 이동
-            
+            st.switch_page("streamlit_app.py")
+
+# --- 메인 게임 구역 ---
 if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    p1 = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
-    p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
-    if st.session_state.status == "hint": p1 = f"<span style='color:red;'>{st.session_state.factor1}</span>"
+    # 🎨 힌트 및 입력 상태에 따른 퀴즈 박스 텍스트 결정
+    if st.session_state.status == "hint":
+        # 틀렸을 때 대기 시간 없이 첫 번째 숫자를 빨간색으로 즉시 고정
+        p1 = f"<span style='color:red;'>{st.session_state.factor1}</span>"
+        p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
+    else:
+        p1 = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
+        p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
     
     st.markdown(f"<div class='quiz-box'>{st.session_state.target_product} = [ {p1} ] × [ {p2} ]</div>", unsafe_allow_html=True)
 
-    if st.session_state.status == "hint":
-        time.sleep(2.5)
-        st.session_state.inputs = []
-        st.session_state.status = "playing"
-        st.session_state.is_answered = False
-        st.rerun()
+    # 🔒 정답 처리 중(대기 시간)일 때만 가상 키보드를 물리적으로 잠급니다.
+    is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
 
-    # 🛑 [잠금 가드 시스템] 정답 처리 진행 중이거나 힌트 대기 상태라면 키보드를 비활성화(True) 시킵니다.
-    is_keyboard_locked = (st.session_state.status != "playing") or ("last_reward" in st.session_state)
-
-    # ⌨️ 숫자 키패드 배치 구역
+    # ⌨️ 숫자 키패드 구역
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            # disabled 옵션을 주어 잠금 시 버튼이 전혀 눌리지 않게 차단합니다.
             if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
-                if len(st.session_state.inputs) < 2 and st.session_state.status == "playing":
+                if len(st.session_state.inputs) < 2:
                     st.session_state.inputs.append(num)
                     st.session_state.is_answered = True
                     st.rerun()
 
     if st.button("⌫ 지우기", use_container_width=True, disabled=is_keyboard_locked):
-        if len(st.session_state.inputs) > 0 and st.session_state.status == "playing":
+        # 힌트 상태일 때 지우기를 누르면 완전히 초기화되어 처음부터 다시 풀 수 있게 유도
+        if st.session_state.status == "hint":
+            st.session_state.inputs = []
+            st.session_state.status = "playing"
+        elif len(st.session_state.inputs) > 0:
             st.session_state.inputs.pop()
         st.rerun()
 
-    # 🟢 정답 효과창 (키보드 최하단 유지 및 안전한 지연처리)
+    # 🎉 정답 효과창 지연 처리 (버그 방지용)
     if "last_reward" in st.session_state:
         st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)
         next_question()
         st.rerun()
 
-    # 입력 완료 시 검증 로직
-    if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and st.session_state.is_answered:
+    # 입력 완료 시 실시간 검증 로직
+    if len(st.session_state.inputs) == 2 and st.session_state.is_answered:
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
             reward = random.randint(8, 13)
             
             st.session_state.gold += reward
             st.session_state.game_score += 1
-            st.session_state.last_reward = reward  
-            st.session_state.status = "correct_waiting" # 연타 방지를 위한 즉시 임시 상태 변경 보장
+            st.session_state.last_reward = reward
+            st.session_state.status = "correct_waiting" # 중복 연타 원천 잠금 상태
             
             force_file_save()
             st.rerun()
         else:
+            # 💡 [핵심 변경] 시간 끌지 않고 즉시 상태를 힌트로 바꾼 뒤 입력 데이터를 강제로 셋팅
             st.session_state.status = "hint"
-            st.session_state.inputs = [st.session_state.factor1]
+            st.session_state.inputs = [st.session_state.factor1] # 첫 번째 답 보정 제공
+            st.session_state.is_answered = False
             st.rerun()
