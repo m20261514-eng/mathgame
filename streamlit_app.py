@@ -93,7 +93,16 @@ st.markdown("""
         }
     }
     
-    .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.1rem; margin-bottom: 25px;}
+    /* 💡 안내 텍스트 디자인 (줄바꿈 반영을 위해 white-space 속성 추가) */
+    .guide-text { 
+        color: #156580 !important; 
+        font-weight: bold; 
+        text-align: center; 
+        font-size: 1.1rem; 
+        margin-bottom: 25px;
+        white-space: pre-line; /* 코드가 \n을 만나면 화면에서도 줄바꿈되도록 고정 */
+        line-height: 1.5;      /* 두 줄 간격이 너무 붙지 않게 조절 */
+    }
     
     div[data-testid="stButton"] button p {
         font-size: 22px !important;
@@ -123,16 +132,13 @@ st.markdown("""
         box-shadow: 0 5px 10px rgba(0,0,0,0.05); margin-bottom: 10px;
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
-    
 
-    /* ⌨️ [모바일 핀번호 입력창 색상 강제 회색 고정 패치] */
     div[data-testid="stTextInput"] input {
-        background-color: #F1F3F5 !important; /* 부드러운 회색 바탕 */
-        color: #212529 !important;            /* 선명한 다크 그레이 글자색 */
-        -webkit-text-fill-color: #212529 !important; /* iOS 모바일 글자색 초기화 방지 */
-        border: 2px solid #CED4DA !important;  /* 은은한 테두리 */
+        background-color: #F1F3F5 !important;
+        color: #212529 !important;
+        -webkit-text-fill-color: #212529 !important;
+        border: 2px solid #CED4DA !important;
     }
-    /* 모바일 브라우저 자체 다크모드로 인한 강제 색상 반전 차단 */
     @media (prefers-color-scheme: dark) {
         div[data-testid="stTextInput"] input {
             background-color: #F1F3F5 !important;
@@ -181,7 +187,9 @@ else:
             st.rerun()
 
     st.markdown(f"<h3 style='text-align:center; color:#099268; margin-bottom:5px;'>💰 통합 보유 골드: {st.session_state.gold} G</h3>", unsafe_allow_html=True)
-    st.markdown("<div class='guide-text'>훈련장에 도전하여 전설의 생물을 부화시킬 골드를 모으세요!</div>", unsafe_allow_html=True)
+    
+    # 🛠️ [핵심 변경] <br> 태그를 이용해 강제로 줄바꿈을 시켰습니다!
+    st.markdown("<div class='guide-text'>훈련장에 도전하여<br>전설의 생물을 부화시킬 골드를 모으세요!</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
