@@ -228,14 +228,17 @@ else:
 
     tab1, tab2 = st.tabs(["🐣 역곱셈 도감", "🤿 나눗셈 도감"])
 
-    def draw_zoo_grid(animal_dict):
+def draw_zoo_grid(animal_dict):
         for tier, title_list in animal_dict.items():
             st.markdown(f"<div class='tier-title'>{tier}</div>", unsafe_allow_html=True)
             cols = st.columns(4)
             for idx, animal_string in enumerate(title_list):
                 col_target = cols[idx % 4]
-                emoji = animal_string.split()[0]
-                name = animal_string.split()[-1]
+                
+                # 💡 [이름 복원 패치] 공백으로 쪼갠 후, 첫 번째 이모지를 제외한 나머지를 다시 하나로 묶습니다.
+                parts = animal_string.split()
+                emoji = parts[0]
+                name = " ".join(parts[1:]) # "아기", "펭귄" -> "아기 펭귄"으로 복원!
                 
                 if animal_string in st.session_state.my_collection:
                     card_html = f"<div class='animal-card-unlocked'><span class='animal-emoji'>{emoji}</span>{name}</div>"
