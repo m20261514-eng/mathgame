@@ -93,15 +93,26 @@ st.markdown("""
         }
     }
     
-    /* 💡 안내 텍스트 디자인 (줄바꿈 반영을 위해 white-space 속성 추가) */
+    /* 💡 안내 텍스트 기본 스타일 */
     .guide-text { 
         color: #156580 !important; 
         font-weight: bold; 
         text-align: center; 
         font-size: 1.1rem; 
         margin-bottom: 25px;
-        white-space: pre-line; /* 코드가 \n을 만나면 화면에서도 줄바꿈되도록 고정 */
-        line-height: 1.5;      /* 두 줄 간격이 너무 붙지 않게 조절 */
+        line-height: 1.5;
+    }
+
+    /* 🖥️ 기본 PC 화면에서는 강제 줄바꿈 태그(<br>)를 작동하지 않게 막음 */
+    .guide-text br {
+        display: none;
+    }
+    
+    /* 📱 스마트폰 화면(600px 이하)에서는 강제 줄바꿈 태그(<br>)를 살려냄 */
+    @media (max-width: 600px) {
+        .guide-text br {
+            display: inline !important;
+        }
     }
     
     div[data-testid="stButton"] button p {
@@ -132,6 +143,15 @@ st.markdown("""
         box-shadow: 0 5px 10px rgba(0,0,0,0.05); margin-bottom: 10px;
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
+    
+    .login-box {
+        background: #FFFDF0 !important; 
+        padding: 25px 15px; 
+        border-radius: 20px;
+        border: 3px dashed #FFD93D;
+        margin-top: 25px; 
+        text-align: center;
+    }
 
     div[data-testid="stTextInput"] input {
         background-color: #F1F3F5 !important;
@@ -188,7 +208,7 @@ else:
 
     st.markdown(f"<h3 style='text-align:center; color:#099268; margin-bottom:5px;'>💰 통합 보유 골드: {st.session_state.gold} G</h3>", unsafe_allow_html=True)
     
-    # 🛠️ [핵심 변경] <br> 태그를 이용해 강제로 줄바꿈을 시켰습니다!
+    # 🛠️ 반응형 줄바꿈이 내장된 HTML 태그 구조 유지
     st.markdown("<div class='guide-text'>훈련장에 도전하여<br>전설의 생물을 부화시킬 골드를 모으세요!</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
