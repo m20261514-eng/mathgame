@@ -64,17 +64,57 @@ st.markdown("""
     .animal-icon { font-size: 100px; }
     .animal-name { font-size: 38px; font-weight: bold; }
     .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #12615C; display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .stButton>button { font-size: 30px !important; border-radius: 15px !important; background-color: #FFD93D !important; color: #222222 !important; height: 65px !important; width: 100% !important; }
-    .lobby-btn button { background-color: #475569 !important; color: white !important; height: 45px !important; font-size: 18px !important; }
+    
+    /* 🛠️ [도각도각 기본 노란색 입체 버튼 디자인] */
+    div[data-testid="stButton"] button { 
+        font-size: 32px !important; 
+        font-weight: bold !important;
+        border-radius: 18px !important; 
+        background-color: #FFD93D !important; 
+        color: #222222 !important; 
+        height: 68px !important; 
+        width: 100% !important; 
+        border: none !important;
+        
+        /* 입체감을 살리는 찐한 노란색 하단 테두리 그림자 */
+        box-shadow: 0px 6px 0px #D6B21E !important; 
+        transition: all 0.05s ease-in-out !important;
+    }
+    
+    /* 버튼 위에 마우스를 올렸을 때 */
+    div[data-testid="stButton"] button:hover {
+        background-color: #FFE169 !important;
+    }
+
+    /* 💥 버튼을 터치/클릭하여 꾹 눌렀을 때 도각 하고 내려앉는 모션 */
+    div[data-testid="stButton"] button:active {
+        transform: translateY(4px) !important;
+        box-shadow: 0px 2px 0px #D6B21E !important;
+    }
+
+    /* 우측 상단 '로비로' 가는 버튼 전용 튕김방지 숏 디자인 */
+    .lobby-btn button { 
+        background-color: #475569 !important; 
+        color: white !important; 
+        height: 45px !important; 
+        font-size: 18px !important; 
+        box-shadow: 0px 4px 0px #334155 !important;
+    }
+    .lobby-btn button:active {
+        transform: translateY(3px) !important;
+        box-shadow: 0px 1px 0px #334155 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 cols_header = st.columns([3, 1])
-with cols_header[0]: st.title("🏹 나눗셈 훈련장")
+with cols_header[0]: st.title("🏹 나눗셈 게임")
 with cols_header[1]:
+    st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
         force_file_save()
         st.switch_page("streamlit_app.py")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.score}</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
