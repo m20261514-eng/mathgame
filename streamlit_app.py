@@ -90,7 +90,7 @@ background_html = f"""
 <div class="custom-lobby-bg"></div>
 
 <style>
-/* 1. 배경화면 고정 레이어 (새벽의 어스름함을 위한 다크 틴트 필터) */
+/* 1. 배경화면 고정 레이어 */
 .custom-lobby-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -137,13 +137,13 @@ section.main,
     100% {{ transform: translateY(-95vh); opacity: 0.3; }}
 }}
 
-/* 글자 텍스트 크로매틱 에버레이션 (새벽의 차원문 느낌 텍스트 연출) */
+/* [수정 완료] f-string 오류 방지를 위해 단일 중괄호 부분을 겹쳐서 {{ }} 로 치환했습니다 */
 @keyframes dimension-shift {{
-    0%, 100% { text-shadow: -2px 0 rgba(167, 139, 250, 0.8), 2px 0 rgba(147, 197, 253, 0.8), 0 0 15px rgba(0,0,0,0.5); }
-    50% { text-shadow: -3px 0 rgba(167, 139, 250, 0.9), 3px 0 rgba(147, 197, 253, 0.9), 0 0 25px rgba(147, 197, 253, 0.4); }
-}
+    0%, 100% {{ text-shadow: -2px 0 rgba(167, 139, 250, 0.8), 2px 0 rgba(147, 197, 253, 0.8), 0 0 15px rgba(0,0,0,0.5); }}
+    50% {{ text-shadow: -3px 0 rgba(167, 139, 250, 0.9), 3px 0 rgba(147, 197, 253, 0.9), 0 0 25px rgba(147, 197, 253, 0.4); }}
+}}
 
-.main-title {
+.main-title {{
     font-size: 7.5vw;
     font-weight: bold; 
     color: #FFFFFF !important; 
@@ -155,10 +155,10 @@ section.main,
     animation: dimension-shift 2.5s ease-in-out infinite;
     display: inline-block; 
     width: 100%;
-}
-@media (min-width: 600px) { .main-title { font-size: 2.6rem !important; } }
+}}
+@media (min-width: 600px) {{ .main-title {{ font-size: 2.6rem !important; }} }}
 
-.guide-text { 
+.guide-text {{ 
     color: #93C5FD !important; 
     font-weight: bold; 
     text-align: center; 
@@ -166,69 +166,69 @@ section.main,
     margin-bottom: 25px;
     line-height: 1.6;
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-}
-.guide-text br { display: none; }
-@media (max-width: 600px) { .guide-text br { display: inline !important; } }
+}}
+.guide-text br {{ display: none; }}
+@media (max-width: 600px) {{ .guide-text br {{ display: inline !important; }} }}
 
 /* 🔑 로그인 박스 */
-.login-box {
+.login-box {{
     background: rgba(15, 23, 42, 0.85);
     padding: 30px;
     border-radius: 25px;
     border: 2px solid #475569;
     box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
     margin-top: 20px;
-}
-.login-box h3, .login-box p, div[data-testid="stMarkdownContainer"] p {
+}}
+.login-box h3, .login-box p, div[data-testid="stMarkdownContainer"] p {{
     color: #F8FAFC !important;
-}
+}}
 
 /* 🧭 게임 입장 대형 네온 버튼 */
-div[data-testid="stButton"] button {
+div[data-testid="stButton"] button {{
     display: block !important; width: 100% !important; padding: 14px 0 !important;
     border-radius: 20px !important;
     background: linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%) !important;
     color: #E2E8F0 !important; border: 3px solid #6366F1 !important;
     box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3) !important; 
     transition: 0.15s all ease !important; height: auto !important;
-}
-div[data-testid="stButton"] button p {
+}}
+div[data-testid="stButton"] button p {{
     font-size: 18px !important; font-weight: bold !important; color: #FFFFFF !important;
-}
-div[data-testid="stButton"] button:hover { 
+}}
+div[data-testid="stButton"] button:hover {{ 
     background: linear-gradient(135deg, #312E81 0%, #1E1B4B 100%) !important; 
     border-color: #818CF8 !important;
     box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5) !important;
     transform: translateY(-2px) !important; 
-}
-div[data-testid="stButton"] button:active {
+}}
+div[data-testid="stButton"] button:active {{
     transform: translateY(3px) !important;
     box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3) !important;
-}
+}}
 
 /* 📊 도감 스타일링 */
-.tier-title {
+.tier-title {{
     font-size: 1.25rem; font-weight: bold; color: #C084FC;
     margin-top: 25px; margin-bottom: 12px; padding-left: 8px; border-left: 5px solid #818CF8;
-}
-.animal-card-locked {
+}}
+.animal-card-locked {{
     background: rgba(30, 41, 59, 0.7); border-radius: 15px; padding: 15px 10px; text-align: center;
     border: 2px dashed #475569; color: #64748B; font-size: 0.95rem; opacity: 0.5; margin-bottom: 10px;
-}
-.animal-card-unlocked {
+}}
+.animal-card-unlocked {{
     background: rgba(15, 23, 42, 0.9); border-radius: 15px; padding: 15px 10px; text-align: center;
     border: 2px solid #818CF8; color: #F1F5F9; font-size: 0.95rem; font-weight: bold;
     box-shadow: 0 5px 15px rgba(99, 102, 241, 0.15); margin-bottom: 10px;
-}
-.animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
+}}
+.animal-emoji {{ font-size: 2.2rem; display: block; margin-bottom: 5px; }}
 
 /* 입력창 다크 모드 고정 패치 */
-div[data-testid="stTextInput"] input {
+div[data-testid="stTextInput"] input {{
     background-color: #0F172A !important;
     color: #F8FAFC !important;
     -webkit-text-fill-color: #F8FAFC !important;
     border: 2px solid #475569 !important;
-}
+}}
 </style>
 
 <div class="dawn-particles-bg">
