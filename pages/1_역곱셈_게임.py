@@ -143,7 +143,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 cols_nav = st.columns([3, 1])
-with cols_nav[0]: st.title("⚔️ 역곱셈 훈련장")
+with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
