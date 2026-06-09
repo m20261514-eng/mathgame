@@ -25,7 +25,7 @@ def next_question():
     st.session_state.inputs = []
     st.session_state.status = "playing" # 게임 상태 초기화 (키보드 잠금 해제)
 
-# 세션 상태 초기화 (각 변수별로 독립적으로 체크)
+# 세션 상태 초기화
 if "game_score" not in st.session_state: st.session_state.game_score = 0
 if "inputs" not in st.session_state: st.session_state.inputs = []
 if "gacha_step" not in st.session_state: st.session_state.gacha_step = "idle"
@@ -60,49 +60,83 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- 🌲 [마법의 숲] 힐링 그린 그라데이션 CSS 스타일링 🌲 ---
+# --- 🌲 [핵심 수정] 마법의 숲 애니메이션 및 흐릿한 배경 CSS 🌲 ---
 st.markdown("""
 <style>
-.stApp { 
-    background: linear-gradient(135deg, #134E3A 0%, #2D6A4F 40%, #52B788 80%, #D8F3DC 100%) !important; 
-    color: #111111 !important; 
+/* 1. 배경 이미지 + 블러 및 어둡게 처리 */
+.stApp::before {
+    content: "";
+    position: fixed;
+    top: -5%; left: -5%; width: 110%; height: 110%;
+    background: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=1920&auto=format&fit=crop') no-repeat center center;
+    background-size: cover;
+    filter: blur(8px) brightness(0.5); /* 블러 처리 및 텍스트 가독성을 위해 어둡게 */
+    z-index: -2;
 }
 [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: transparent; }
 
-.game-title {
-    font-size: 5.2vw;
-    font-weight: bold;
-    color: #FFFFFF;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
-    margin: 0;
-    white-space: nowrap;
-}
-@media (min-width: 600px) {
-    .game-title { font-size: 2.1rem !important; }
+/* 2. 흔들리는 나뭇잎 & 금빛 입자 컨테이너 */
+.magic-forest-bg {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -1; pointer-events: none; overflow: hidden;
 }
 
-[data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    width: 100% !important;
-    gap: 8px !important;
+/* 3. 금빛 반짝이 애니메이션 (Box-shadow 활용) */
+.gold-particles {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: transparent;
+    box-shadow: 
+        10vw 20vh #FFD700, 30vw 40vh #FFDF00, 50vw 80vh #FFF8DC, 
+        70vw 10vh #FFD700, 90vw 60vh #FFDF00, 20vw 80vh #FFF8DC,
+        40vw 15vh #FFD700, 80vw 35vh #FFDF00, 60vw 90vh #FFF8DC,
+        15vw 50vh #FFD700, 85vw 70vh #FFF8DC, 45vw 90vh #FFDF00;
+    animation: floatUp 15s linear infinite;
+    opacity: 0.6; filter: blur(1px);
 }
-[data-testid="stHorizontalBlock"] > div {
-    flex: 1 1 0% !important;
-    min-width: 0 !important;
+.gold-particles::after {
+    content: ""; position: absolute; top: 100vh; width: 4px; height: 4px;
+    background: transparent; box-shadow: inherit;
 }
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 0.8; }
+    50% { opacity: 0.3; }
+    100% { transform: translateY(-100vh); opacity: 0.8; }
+}
+
+/* 4. 살랑살랑 떨어지는 나뭇잎 애니메이션 */
+.leaf {
+    position: absolute; font-size: 24px; animation: swayAndFall linear infinite; opacity: 0.8;
+}
+.leaf:nth-child(2) { left: 10%; top: -10%; animation-duration: 12s; animation-delay: 0s; }
+.leaf:nth-child(3) { left: 30%; top: -10%; animation-duration: 15s; animation-delay: 3s; font-size: 18px; }
+.leaf:nth-child(4) { left: 60%; top: -10%; animation-duration: 11s; animation-delay: 1s; font-size: 28px; }
+.leaf:nth-child(5) { left: 80%; top: -10%; animation-duration: 16s; animation-delay: 5s; }
+.leaf:nth-child(6) { left: 45%; top: -10%; animation-duration: 14s; animation-delay: 7s; font-size: 20px;}
+
+@keyframes swayAndFall {
+    0% { transform: translateY(-10vh) rotate(0deg) translateX(0); }
+    25% { transform: translateY(25vh) rotate(45deg) translateX(30px); }
+    50% { transform: translateY(50vh) rotate(90deg) translateX(-20px); }
+    75% { transform: translateY(75vh) rotate(135deg) translateX(40px); }
+    100% { transform: translateY(110vh) rotate(180deg) translateX(-30px); }
+}
+
+/* --- 기존 UI 스타일링 --- */
+.game-title { font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }
+@media (min-width: 600px) { .game-title { font-size: 2.1rem !important; } }
+
+[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }
+[data-testid="stHorizontalBlock"] > div { flex: 1 1 0% !important; min-width: 0 !important; }
 
 .quiz-box { 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #1B4332 !important; 
-    border: 5px solid #74C69D; box-shadow: 0px 8px 0px rgba(45, 106, 79, 0.3); margin-bottom: 30px; 
+    border: 5px solid #74C69D; box-shadow: 0px 8px 15px rgba(0,0,0,0.4); margin-bottom: 30px; 
 }
-
 .dashboard { 
-    background: #E8F5E9; padding: 15px; border-radius: 20px; border: 3px solid #2D6A4F; 
+    background: rgba(232, 245, 233, 0.9); padding: 15px; border-radius: 20px; border: 3px solid #2D6A4F; 
     font-size: 22px; font-weight: bold; color: #1B4332 !important; display: flex; justify-content: space-between; 
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
 }
 
 div[data-testid="stButton"] button { 
@@ -119,17 +153,26 @@ div[data-testid="stButton"] button:disabled {
 }
 
 .lobby-btn button { 
-    background-color: #1B4332 !important; color: #FFFFFF !important; height: 45px !important; 
+    background-color: rgba(27, 67, 50, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 17px !important; box-shadow: 0px 4px 0px #081C15 !important; font-weight: bold !important;
 }
 .lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #081C15 !important; }
 
 @keyframes leaf-vibrate { 0% { transform: translate(0) rotate(0deg); } 20% { transform: translate(-4px, 4px) rotate(-3deg); } 40% { transform: translate(-4px, -4px) rotate(3deg); } 60% { transform: translate(4px, 4px) rotate(-3deg); } 80% { transform: translate(-4px, -4px) rotate(3deg); } 100% { transform: translate(0) rotate(0deg); } }
 .capsule-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: leaf-vibrate 0.14s linear infinite; }
-.reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 20px 0; }
+.reveal-card { background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }
 .animal-icon { font-size: 100px; margin-bottom: 10px; }
 .animal-name { font-size: 32px; font-weight: bold; color: #1B4332 !important; }
 </style>
+
+<div class="magic-forest-bg">
+    <div class="gold-particles"></div>
+    <div class="leaf">🍃</div>
+    <div class="leaf">🌿</div>
+    <div class="leaf">🍃</div>
+    <div class="leaf">🍂</div>
+    <div class="leaf">🌿</div>
+</div>
 """, unsafe_allow_html=True)
 
 # 상단 비율 세팅 및 로비 연결
@@ -181,18 +224,18 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    # 🛠️ [핵심 수정] 정답 알림 상자를 미리 자리만 잡아둡니다.
+    # 정답 알림 상자를 미리 자리만 잡아둡니다.
     notice_box = st.empty()
 
     user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
     
-    # 🛠️ 문제 출제 상자 (먼저 그립니다)
+    # 문제 출제 상자 
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
 
     # 정답을 맞힌 상태일 경우 키패드 잠금
     is_locked = (st.session_state.status == "correct_waiting")
 
-    # 🛠️ 1 ~ 9 키패드 (잠금 여부를 반영하여 먼저 그립니다)
+    # 1 ~ 9 키패드 
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
@@ -231,7 +274,7 @@ if st.session_state.gacha_step == "idle":
                 st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
                 st.rerun()
 
-    # 🛠️ [핵심 수정] UI가 모두 그려진 후, 상태를 확인하여 1.5초 대기하고 새 문제로 넘깁니다.
+    # UI가 모두 그려진 후, 상태를 확인하여 1.5초 대기하고 새 문제로 넘깁니다.
     if st.session_state.status == "correct_waiting":
         notice_box.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
         time.sleep(1.5)
