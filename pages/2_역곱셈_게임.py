@@ -2,19 +2,39 @@ import streamlit as st
 import random
 import time
 import json
+import base64
+import os
 
-st.set_page_config(page_title="신비의 알 역곱셈 퀘스트", page_icon="🥚", layout="centered")
+st.set_page_config(page_title="신비한 바다 역곱셈 퀘스트", page_icon="🔱", layout="centered")
 
+# 🛠️ [경로 치트키] 현재 파이썬 파일과 '같은 폴더'에 있는 배경 이미지를 강제로 연결합니다.
+current_dir = os.path.dirname(__file__)
+IMAGE_PATH = os.path.join(current_dir, "inverse_background.png")
+
+# 이미지를 세션 상태 주입용 Base64로 변환하는 함수
+def get_base64_image(img_path):
+    try:
+        with open(img_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        return ""
+
+img_base64 = get_base64_image(IMAGE_PATH)
+
+# 로그인 체크 분기
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.warning("로그인이 필요합니다. 메인 페이지로 돌아가세요!")
     if st.button("🏠 메인 로비로 이동"): st.switch_page("streamlit_app.py")
     st.stop()
 
+# 데이터 강제 저장 유틸리티
 def force_file_save():
     data_to_save = {"gold": st.session_state.gold, "my_collection": list(st.session_state.my_collection)}
     with open(f"student_data/{st.session_state.current_pin}.json", "w", encoding="utf-8") as f:
         json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
+# 다음 문제 생성 유틸리티
 def next_question():
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
@@ -25,6 +45,7 @@ def next_question():
     if "last_reward" in st.session_state:
         del st.session_state.last_reward
 
+# 세션 상태 초기화
 if "game_score" not in st.session_state:
     st.session_state.game_score = 0
     st.session_state.inputs = []
@@ -36,12 +57,14 @@ if "game_score" not in st.session_state:
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
 
+# 🦀 바다 & 자연 생물 데이터 세팅
 animals_data = {
-    "일반": ["🐿️ 다람쥐", "🐥 병아리", "🐹 햄스터", "🐰 토끼", "🦔 도치", "🐭 생쥐", "🐱고양이", "🐻곰돌이"],
-    "희귀": ["🦊🔥 불꽃여우", "🐱✨ 우주고양이", "🐧❄️ 아기 펭귄", "🐼 푸바오", "🐨 코알라", "🐺 은빛 늑대", "🦫 카피바라", "🐿️🌰 볼빵빵 다람쥐"],
-    "전설": ["🐲 황금용", "🌈🦄 레인보우 유니콘", "🦁👑 사자왕", "🏆🐯 위대한 호랑이"]
+    "일반": ["🦋 나비", "🐝 꿀벌", "🐞 무당벌레", "🐌 달팽이", "🐜 개미", "🐟 물고기", "🐸 개구리", "🦀 꽃게"],
+    "희귀": ["🦑 오징어징어", "🦐 안녕하새우", "🐡 뾰족 복어", "🐢 조용한 거북이", "🦎 우파루파", "💎🐟 보석 물고기", "🐍스르륵 아기뱀", "🌈🐠 레인보우 열대어"],
+    "전설": ["🔱🐳 바다의 신 고래", "👑🐸 개구리 왕자", "🦈 심해의 메가로돈", "🦖 티라노사우루스"]
 }
 
+# 진주 방울 뽑기 로직
 def start_gacha():
     if st.session_state.gold >= 100:
         st.session_state.gold -= 100
@@ -55,98 +78,126 @@ def start_gacha():
         st.session_state.my_collection.add(selected_animal)
         force_file_save()
     else:
-        st.error("골드가 부족해요!")
+        st.error("골드가 부족해요! 🔮")
 
-st.markdown("""
+# --- 🌊 [청량한 블루 커스텀] 신비한 바다 테마 CSS ---
+background_html = f"""
+<div class="custom-inverse-bg"></div>
+
 <style>
-.stApp { background-color: #FFFDF0; color: #111111 !important; }
-[data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
+/* 1. 배경화면 고정 레이어 (은은하게 어둡고 블러) */
+.custom-inverse-bg {{
+    position: fixed;
+    top: -10px; left: -10px; 
+    width: calc(100vw + 20px); 
+    height: calc(100vh + 20px);
+    background-image: url("data:image/png;base64,{img_base64}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    filter: blur(6px) brightness(0.5); 
+    z-index: -3; 
+    pointer-events: none;
+}}
 
-/* 📱 [모바일 대응 반응형 타이틀 세팅] */
-.game-title {
-    font-size: 5.2vw;
-    font-weight: bold;
-    color: #111111;
-    margin: 0;
-    white-space: nowrap;
-    overflow: visible !important;
-    text-overflow: clip !important;
-}
-@media (min-width: 600px) {
-    .game-title { font-size: 2.1rem !important; }
-}
+/* 2. Streamlit 기본 판때기 완벽 투명화 */
+.stApp, 
+section.main,
+[data-testid="stAppViewContainer"], 
+[data-testid="stHeader"], 
+[data-testid="stMainViewContainer"], 
+[data-testid="stMain"],
+[data-testid="stDecoration"] {{
+    background-color: transparent !important;
+    background: transparent !important;
+}}
 
-/* 📱 [모바일 3열 강제 유지 킷트] */
-[data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    width: 100% !important;
-    gap: 8px !important;
-}
-[data-testid="stHorizontalBlock"] > div {
-    flex: 1 1 0% !important;
-    min-width: 0 !important;
-}
+/* 3. 은은한 심해 물방울 반짝이 효과 */
+.magic-particles-bg {{
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -1; pointer-events: none; overflow: hidden;
+}}
+.blue-sparkles {{
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: transparent;
+    box-shadow: 
+        15vw 25vh rgba(255,255,255,0.6), 35vw 45vh rgba(144,224,239,0.5), 55vw 75vh rgba(255,255,255,0.6), 
+        75vw 15vh rgba(144,224,239,0.5), 85vw 55vh rgba(255,255,255,0.6), 25vw 85vh rgba(144,224,239,0.5);
+    animation: floatUp 18s linear infinite;
+    filter: blur(0.5px);
+}}
+@keyframes floatUp {{
+    0% {{ transform: translateY(0); opacity: 0.5; }}
+    50% {{ opacity: 0.2; }}
+    100% {{ transform: translateY(-100vh); opacity: 0.5; }}
+}}
 
-.quiz-box { 
-    background: white; padding: 25px; border-radius: 25px; text-align: center; 
-    font-size: 42px; font-weight: bold; color: #111111 !important; 
-    border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 30px; 
-}
+/* 컴포넌트 스타일 - 청량한 블루로 리모델링 */
+.game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
+@media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
-@keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
-.egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
-.reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
-.animal-icon { font-size: 100px; margin-bottom: 10px; }
-.animal-name { font-size: 32px; font-weight: bold; color: #111111 !important; }
+[data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
+[data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
-.dashboard { 
-    background: #E3FAFC; padding: 15px; border-radius: 20px; border: 3px solid #099268; 
-    font-size: 22px; font-weight: bold; color: #044E34 !important; display: flex; justify-content: space-between; 
-}
+/* 퀴즈 박스 테두리를 청량한 파란색 계열로 변경 */
+.quiz-box {{ 
+    background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
+    font-size: 42px; font-weight: bold; color: #03045E !important; 
+    border: 5px solid #00B4D8; box-shadow: 0px 8px 15px rgba(0,0,0,0.4); margin-bottom: 30px; 
+}}
+.dashboard {{ 
+    background: rgba(224, 251, 252, 0.9); padding: 15px; border-radius: 20px; border: 3px solid #0077B6; 
+    font-size: 22px; font-weight: bold; color: #03045E !important; display: flex; justify-content: space-between;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
+}}
 
-/* ⌨️ 입체 키패드 커스텀 */
-div[data-testid="stButton"] button { 
+/* 진주 방울 진동 애니메이션 */
+@keyframes vibrate {{ 0% {{ transform: translate(0); }} 20% {{ transform: translate(-5px, 5px); }} 40% {{ transform: translate(-5px, -5px); }} 60% {{ transform: translate(5px, 5px); }} 80% {{ transform: translate(-5px, -5px); }} 100% {{ transform: translate(0); }} }}
+.pearl-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }}
+.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #00B4D8; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
+.animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
+.animal-name {{ font-size: 32px; font-weight: bold; color: #03045E !important; }}
+
+/* ⌨️ 청량한 파란색 입체 키패드 */
+div[data-testid="stButton"] button {{ 
     font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
-    background-color: #FFD93D !important; color: #111111 !important; height: 68px !important; 
-    width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #D6B21E !important; 
+    background-color: #00B4D8 !important; color: #FFFFFF !important; height: 68px !important; 
+    width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #0077B6 !important; 
     transition: all 0.05s ease-in-out !important;
-}
-div[data-testid="stButton"] button:hover { background-color: #FFE169 !important; }
-div[data-testid="stButton"] button:active { transform: translateY(4px) !important; box-shadow: 0px 2px 0px #D6B21E !important; }
-div[data-testid="stButton"] button:disabled {
-    background-color: #FFD93D !important; color: #111111 !important; box-shadow: 0px 6px 0px #D6B21E !important;
+}}
+div[data-testid="stButton"] button:hover {{ background-color: #90E0EF !important; color: #03045E !important; }}
+div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 2px 0px #0077B6 !important; }}
+div[data-testid="stButton"] button:disabled {{
+    background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 6px 0px #0077B6 !important;
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
-}
+}}
 
-/* 🏠 상단 네비바 데스크톱 기본형 */
-.lobby-btn button { 
-    background-color: #1E293B !important; color: #FFFFFF !important; height: 45px !important; 
-    font-size: 17px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
-}
-.lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #0F172A !important; }
+.lobby-btn button {{ 
+    background-color: rgba(3, 4, 94, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
+    font-size: 17px !important; box-shadow: 0px 4px 0px #000814 !important; font-weight: bold !important;
+}}
+.lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #000814 !important; }}
 
-/* 📱 [핸드폰 미디어 쿼리: 로비로 버튼 압축 축소 마진] */
-@media (max-width: 600px) {
-    .lobby-btn button {
-        height: 36px !important;
-        font-size: 13px !important;
-        padding: 0px 4px !important;
-        box-shadow: 0px 3px 0px #0F172A !important;
-    }
-    .lobby-btn button:active { 
-        transform: translateY(2px) !important; 
-        box-shadow: 0px 1px 0px #0F172A !important; 
-    }
-}
+@media (max-width: 600px) {{
+    .lobby-btn button {{ height: 36px !important; font-size: 13px !important; padding: 0px 4px !important; box-shadow: 0px 3px 0px #000814 !important; }}
+    .lobby-btn button:active {{ transform: translateY(2px) !important; box-shadow: 0px 1px 0px #000814 !important; }}
+}}
 </style>
-""", unsafe_allow_html=True)
 
-# 🛠️ 상단 비율 최적화 구조 변경 ([2.9, 1.1])
+<div class="magic-particles-bg">
+    <div class="blue-sparkles"></div>
+</div>
+"""
+
+if not img_base64:
+    st.error("🚨 [파일 인식 실패] 폴더 안에 'inverse_background.png' 파일이 없는 것 같습니다. 철자가 완벽히 똑같은지 다시 확인해 주세요!")
+
+st.markdown(background_html, unsafe_allow_html=True)
+
+# 상단 레이아웃 네비바
 cols_nav = st.columns([2.9, 1.1])
 with cols_nav[0]: 
-    st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>⚔️ 역곱셈 게임</h2></div>", unsafe_allow_html=True)
+    st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>🔱 신비한 바다 역곱셈</h2></div>", unsafe_allow_html=True)
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
@@ -156,8 +207,9 @@ with cols_nav[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
+# 가챠(진주 방울 뽑기) 연출 단계 처리
 if st.session_state.gacha_step == "shaking":
-    st.markdown("<span class='egg-shaking'>🥚</span>", unsafe_allow_html=True)
+    st.markdown("<span class='pearl-shaking'>🔮</span>", unsafe_allow_html=True) # 진주 방울 느낌의 이모지 연출
     time.sleep(2.0)
     st.session_state.gacha_step = "revealed"
     st.rerun()
@@ -183,9 +235,10 @@ elif st.session_state.gacha_step == "revealed":
             force_file_save()
             st.switch_page("streamlit_app.py")
 
+# 기본 플레이 화면 UI
 if st.session_state.gacha_step == "idle":
-    with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
-        st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
+    with st.expander("🔮 [진주 방울 뽑기 상점]", expanded=False):
+        st.button("🔮 진주 방울 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
     if st.session_state.status == "hint":
         p1 = f"<span style='color: #E03131; font-weight: 900;'>{st.session_state.factor1}</span>"
@@ -217,7 +270,7 @@ if st.session_state.gacha_step == "idle":
         st.rerun()
 
     if "last_reward" in st.session_state:
-        st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
+        st.success(f"💙 정답! 바다의 축복으로 +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)
         next_question()
         st.rerun()
