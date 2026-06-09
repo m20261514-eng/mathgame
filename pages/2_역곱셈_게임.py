@@ -45,14 +45,16 @@ def next_question():
     if "last_reward" in st.session_state:
         del st.session_state.last_reward
 
-# 세션 상태 초기화
-if "game_score" not in st.session_state:
-    st.session_state.game_score = 0
-    st.session_state.inputs = []
-    st.session_state.status = "playing"
-    st.session_state.gacha_step = "idle"
-    st.session_state.revealed_animal = None
-    st.session_state.is_answered = False
+# 🛠️ [에러 해결] 세션 상태 초기화 유틸리티 (하나씩 개별 검사하여 빈틈없이 생성)
+if "game_score" not in st.session_state: st.session_state.game_score = 0
+if "inputs" not in st.session_state: st.session_state.inputs = []
+if "status" not in st.session_state: st.session_state.status = "playing"
+if "gacha_step" not in st.session_state: st.session_state.gacha_step = "idle"
+if "revealed_animal" not in st.session_state: st.session_state.revealed_animal = None
+if "is_answered" not in st.session_state: st.session_state.is_answered = False
+
+# 문제용 변수가 하나라도 없으면 통째로 새로 출제
+if "target_product" not in st.session_state or "factor1" not in st.session_state or "factor2" not in st.session_state:
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
@@ -80,7 +82,7 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🔮")
 
-# --- 🌊 [청량한 블루 커스텀] 신비한 바다 테마 CSS ---
+# --- 🌊 신비한 바다 테마 CSS ---
 background_html = f"""
 <div class="custom-inverse-bg"></div>
 
@@ -132,14 +134,13 @@ section.main,
     100% {{ transform: translateY(-100vh); opacity: 0.5; }}
 }}
 
-/* 컴포넌트 스타일 - 청량한 블루로 리모델링 */
+/* 컴포넌트 스타일 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
 @media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
 [data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
 [data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
-/* 퀴즈 박스 테두리를 청량한 파란색 계열로 변경 */
 .quiz-box {{ 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #03045E !important; 
@@ -151,14 +152,12 @@ section.main,
     box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
 }}
 
-/* 진주 방울 진동 애니메이션 */
 @keyframes vibrate {{ 0% {{ transform: translate(0); }} 20% {{ transform: translate(-5px, 5px); }} 40% {{ transform: translate(-5px, -5px); }} 60% {{ transform: translate(5px, 5px); }} 80% {{ transform: translate(-5px, -5px); }} 100% {{ transform: translate(0); }} }}
 .pearl-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }}
 .reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #00B4D8; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
 .animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
 .animal-name {{ font-size: 32px; font-weight: bold; color: #03045E !important; }}
 
-/* ⌨️ 청량한 파란색 입체 키패드 */
 div[data-testid="stButton"] button {{ 
     font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #00B4D8 !important; color: #FFFFFF !important; height: 68px !important; 
@@ -194,7 +193,7 @@ if not img_base64:
 
 st.markdown(background_html, unsafe_allow_html=True)
 
-# 상단 레이아웃 네비바
+# 上단 레이아웃 네비바
 cols_nav = st.columns([2.9, 1.1])
 with cols_nav[0]: 
     st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>🔱 신비한 바다 역곱셈</h2></div>", unsafe_allow_html=True)
@@ -209,7 +208,7 @@ st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_sc
 
 # 가챠(진주 방울 뽑기) 연출 단계 처리
 if st.session_state.gacha_step == "shaking":
-    st.markdown("<span class='pearl-shaking'>🔮</span>", unsafe_allow_html=True) # 진주 방울 느낌의 이모지 연출
+    st.markdown("<span class='pearl-shaking'>🔮</span>", unsafe_allow_html=True)
     time.sleep(2.0)
     st.session_state.gacha_step = "revealed"
     st.rerun()
