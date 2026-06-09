@@ -155,8 +155,9 @@ if st.session_state.gacha_step == "idle":
             for i, val in enumerate(row):
                 cols[i].button(str(val), key=f"key_{val}", use_container_width=True, on_click=lambda v=val: st.session_state.inputs.append(v) or setattr(st.session_state, 'is_answered', True))
         
-        if st.button("⌫ 지우기", key="del_btn"):
-            if len(st.session_state.inputs) > 0: st.session_state.inputs.pop()
+    if st.button("⌫ 지우기", key="del_btn", use_container_width=True):
+            if len(st.session_state.inputs) > 0: 
+                st.session_state.inputs.pop()
             st.rerun()
 
     if len(st.session_state.inputs) == 1 and st.session_state.status == "playing":
