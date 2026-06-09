@@ -34,9 +34,9 @@ def next_question():
     st.session_state.status = "playing"
 
 animals_data = {
-    "✨ 일반 등급": ["🍼 아기오리", "🐥 병아리", "🐹 햄스터", "🐰 토끼", "🦔 도치"],
-    "🌟 희귀 등급": ["🦊 불꽃여우", "🐱 우주고양이", "🦄 페가수스", "🐼 푸바오", "🐨 코알라", "🐺 은빛 늑대"],
-    "👑 전설 등급": ["🐲 황금용", "🦄 레인보우 유니콘", "🦁 사자왕", "🐋 거대 고래", "🦊 구미호"]
+    "일반": ["🐿️ 다람쥐", "🐥 병아리", "🐹 햄스터", "🐰 토끼", "🦔 도치", "🐭 생쥐", "🐱고양이", "🐻곰돌이"],
+    "희귀": ["🦊🔥 불꽃여우", "🐱✨ 우주고양이", "🐧❄️ 아기 펭귄", "🐼 푸바오", "🐨 코알라", "🐺 은빛 늑대", "🦫 카피바라", "🐿️🌰 볼빵빵 다람쥐"],
+    "전설": ["🐲 황금용", "🌈🦄 레인보우 유니콘", "🦁👑 사자왕", "🏆🐯 위대한 호랑이"]
 }
 
 def start_gacha():
@@ -44,9 +44,9 @@ def start_gacha():
         st.session_state.gold -= 100
         st.session_state.gacha_step = "shaking"
         rand = random.random()
-        if rand < 0.7: tier = "✨ 일반 등급"
-        elif rand < 0.95: tier = "🌟 희귀 등급"
-        else: tier = "👑 전설 등급"
+        if rand < 0.7: tier = "✨ 일반"
+        elif rand < 0.95: tier = "🌟 희귀"
+        else: tier = "👑 전설"
         selected_animal = random.choice(animals_data[tier])
         st.session_state.revealed_animal = (tier, selected_animal)
         st.session_state.my_collection.add(selected_animal)
