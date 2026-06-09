@@ -25,14 +25,14 @@ def next_question():
     st.session_state.inputs = []
     st.session_state.status = "playing" # 게임 상태 초기화 (키보드 잠금 해제)
 
-# 세션 상태 초기화
-if "game_score" not in st.session_state:
-    st.session_state.game_score = 0
-    st.session_state.inputs = []
-    st.session_state.gacha_step = "idle"
-    st.session_state.status = "playing" # 상태 관리용 (playing / correct_waiting)
-    st.session_state.last_reward = 0
-    st.session_state.revealed_animal = None
+# 🛠️ [핵심 수정] 세션 상태 초기화 (각 변수별로 독립적으로 체크하여 안전성 강화)
+if "game_score" not in st.session_state: st.session_state.game_score = 0
+if "inputs" not in st.session_state: st.session_state.inputs = []
+if "gacha_step" not in st.session_state: st.session_state.gacha_step = "idle"
+if "status" not in st.session_state: st.session_state.status = "playing"
+if "last_reward" not in st.session_state: st.session_state.last_reward = 0
+if "revealed_animal" not in st.session_state: st.session_state.revealed_animal = None
+if "factor1" not in st.session_state:
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_answer = st.session_state.factor1 * st.session_state.factor2
@@ -181,7 +181,7 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    # 🛠️ [핵심 수정] 정답 판정 후 1.5초 대기 시 화면 렌더링을 위한 최상단 흐름
+    # 정답 판정 후 1.5초 대기 시 화면 렌더링을 위한 최상단 흐름
     if st.session_state.status == "correct_waiting":
         st.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
         time.sleep(1.5)
@@ -193,7 +193,7 @@ if st.session_state.gacha_step == "idle":
     # 문제 출제 상자
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
 
-    # 🛠️ [핵심 수정] 정답을 맞힌 상태(correct_waiting)일 경우 모든 키패드 변수에 잠금(True) 처리
+    # 정답을 맞힌 상태(correct_waiting)일 경우 모든 키패드 변수에 잠금(True) 처리
     is_locked = (st.session_state.status == "correct_waiting")
 
     # 1 ~ 9 나뭇잎 초록색 키패드 매트릭스 배치
