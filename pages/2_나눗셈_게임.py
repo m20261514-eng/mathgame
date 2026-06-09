@@ -60,7 +60,6 @@ st.markdown("""
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 25px; }
     
-    /* 🚨 힌트 박스 스타일 */
     .hint-box { 
         color: #FF4B4B !important; 
         font-size: 36px !important; 
@@ -82,7 +81,6 @@ st.markdown("""
     .animal-name { font-size: 38px; font-weight: bold; }
     .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #12615C; display: flex; justify-content: space-between; margin-bottom: 20px; }
     
-    /* 🛠️ [도각도각 기본 노란색 입체 버튼 디자인] */
     div[data-testid="stButton"] button { 
         font-size: 32px !important; 
         font-weight: bold !important;
@@ -101,7 +99,6 @@ st.markdown("""
         box-shadow: 0px 2px 0px #D6B21E !important;
     }
 
-    /* 🔒 잠금(비활성화) 상태일 때도 형태 유지 */
     div[data-testid="stButton"] button:disabled {
         background-color: #FFD93D !important;
         color: #222222 !important;
@@ -111,7 +108,6 @@ st.markdown("""
         opacity: 0.85 !important;
     }
 
-    /* 우측 상단 '로비로' 가는 버튼 전용 튕김방지 숏 디자인 */
     .lobby-btn button { 
         background-color: #475569 !important; 
         color: white !important; 
@@ -137,6 +133,7 @@ with cols_header[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.score}</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
+# --- 신비의 알 뽑기 연출 구역 ---
 if st.session_state.gacha_step == "shaking":
     st.markdown("<span class='egg-shaking'>🥚</span>", unsafe_allow_html=True)
     time.sleep(2.0)
@@ -147,16 +144,25 @@ elif st.session_state.gacha_step == "revealed":
     st.markdown("<div class='reveal-card'>", unsafe_allow_html=True)
     if "전설" in tier: st.balloons()
     st.markdown(f"<div class='animal-icon'>{animal.split()[0]}</div><div class='animal-name'>[{tier}] {animal.split()[-1]}</div></div>", unsafe_allow_html=True)
-    if st.button("확인 (도감으로 가기)", use_container_width=True):
-        st.session_state.gacha_step = "idle"
-        force_file_save()
-        st.switch_page("streamlit_app.py")
+    
+    # 🛠️ 버튼 분리: 확인(계속하기) vs 도감 보러가기
+    col_confirm1, col_confirm2 = st.columns(2)
+    with col_confirm1:
+        if st.button("확인", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            force_file_save()
+            st.rerun()  # 훈련장에 그대로 남음
+    with col_confirm2:
+        if st.button("도감 보기", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            force_file_save()
+            st.switch_page("streamlit_app.py") # 로비로 이동
 
+# --- 게임 인터페이스 구역 ---
 if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작!", on_click=start_gacha, use_container_width=True)
     
-    # 🎨 힌트 상태일 때 물음표 색상 처리
     if st.session_state.status == "hint":
         p_ans = "<span style='color: #FF4B4B;'> ? </span>"
     else:
@@ -164,10 +170,8 @@ if st.session_state.gacha_step == "idle":
         
     st.markdown(f"<div class='quiz-box'>{st.session_state.dividend} ÷ {st.session_state.divisor} = [ {p_ans} ]</div>", unsafe_allow_html=True)
 
-    # 🛑 [핵심 버그 수정 1] 정답 정산 중이거나 힌트 출력 중이면 모든 키패드를 강제로 잠금합니다.
     is_keyboard_locked = (st.session_state.status in ["hint", "correct_waiting"]) or ("last_reward" in st.session_state)
 
-    # ⌨️ 숫자 키패드 생성 (상시 고정 및 잠금 연동)
     keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in keypad:
         cols = st.columns(3)
@@ -183,7 +187,6 @@ if st.session_state.gacha_step == "idle":
             st.session_state.inputs.pop()
         st.rerun()
 
-    # 🛑 틀렸을 때 곱셈 힌트 연출 구역
     if st.session_state.status == "hint":
         st.markdown(f"<div class='hint-box'>💡 힌트 곱셈식: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
         time.sleep(2.5)
@@ -192,24 +195,19 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
-    # 🟢 [핵심 버그 수정 2] 정답 확정 및 안전한 지연시간 대기 연출 구역
     if "last_reward" in st.session_state:
         st.success(f"✅ 정답! +{st.session_state.last_reward}G!")
         time.sleep(1.2)
         make_division_question()
         st.rerun()
 
-    # 정답 제출 검증 로직 변경 (중복 트리거 완전 차단)
     if len(st.session_state.inputs) == 1 and st.session_state.status == "playing" and st.session_state.is_answered:
         if st.session_state.inputs[0] == st.session_state.correct_answer:
             reward = random.randint(8, 13)
-            
-            # 버튼 클릭 판정이 되자마자 즉시 세션을 고정하고 상태를 바꿉니다.
             st.session_state.score += 1
             st.session_state.gold += reward
-            st.session_state.last_reward = reward  # 임시 금액 저장소 활용
-            st.session_state.status = "correct_waiting" # 다른 유저 액션 차단용 상태값
-            
+            st.session_state.last_reward = reward
+            st.session_state.status = "correct_waiting"
             force_file_save()
             st.rerun()
         else:
