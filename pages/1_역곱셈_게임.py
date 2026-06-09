@@ -60,23 +60,52 @@ def start_gacha():
 
 st.markdown("""
     <style>
-    .stApp { background-color: #FFFDF0; }
+    /* 전체 기본 글자색을 아주 선명하고 어두운 검은색으로 고정 */
+    .stApp { background-color: #FFFDF0; color: #111111 !important; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
-    .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 30px; }
+    
+    /* 🎯 퀴즈 박스 글자색: 흐릿한 색상에서 완전한 진한 검은색(#111111)으로 수정 */
+    .quiz-box { 
+        background: white; 
+        padding: 25px; 
+        border-radius: 25px; 
+        text-align: center; 
+        font-size: 42px; 
+        font-weight: bold; 
+        color: #111111 !important; 
+        border: 5px solid #FFD93D; 
+        box-shadow: 0px 8px 0px #FFD93D55; 
+        margin-bottom: 30px; 
+    }
+    
     @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
     .egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
+    
+    /* 🥚 결과 확인 카드 글자색 선명하게 조정 */
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
     .animal-icon { font-size: 100px; margin-bottom: 10px; }
-    .animal-name { font-size: 32px; font-weight: bold; }
-    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; }
+    .animal-name { font-size: 32px; font-weight: bold; color: #111111 !important; }
     
-    /* 입체 버튼 스타일 */
+    /* 📊 상단 대보드 글자색: 기존 흐릿한 초록색에서 선명하고 아주 깊은 다크 그린(#044E34)으로 변경 */
+    .dashboard { 
+        background: #E3FAFC; 
+        padding: 15px; 
+        border-radius: 20px; 
+        border: 3px solid #099268; 
+        font-size: 22px; 
+        font-weight: bold; 
+        color: #044E34 !important; 
+        display: flex; 
+        justify-content: space-between; 
+    }
+    
+    /* ⌨️ 숫자 키패드 글자색: 흐릿한 회색(#4A4A4A)에서 완전 찐한 검은색(#111111)으로 수정 */
     div[data-testid="stButton"] button { 
         font-size: 32px !important; 
         font-weight: bold !important;
         border-radius: 18px !important; 
         background-color: #FFD93D !important; 
-        color: #222222 !important; 
+        color: #111111 !important; /* 글자색 전면 수정 */
         height: 68px !important; 
         width: 100% !important; 
         border: none !important;
@@ -90,23 +119,25 @@ st.markdown("""
     }
     div[data-testid="stButton"] button:disabled {
         background-color: #FFD93D !important;
-        color: #222222 !important;
+        color: #111111 !important;
         box-shadow: 0px 6px 0px #D6B21E !important;
         transform: none !important;
         cursor: not-allowed !important;
         opacity: 0.85 !important;
     }
 
+    /* 🏠 로비로 가기 글자색은 흰색 유지하되 굵기 강조 */
     .lobby-btn button { 
-        background-color: #475569 !important; 
-        color: white !important; 
+        background-color: #1E293B !important; /* 조금 더 어두운 곤색으로 패널 대비 상승 */
+        color: #FFFFFF !important; 
         height: 45px !important; 
         font-size: 18px !important; 
-        box-shadow: 0px 4px 0px #334155 !important;
+        box-shadow: 0px 4px 0px #0F172A !important;
+        font-weight: bold !important;
     }
     .lobby-btn button:active {
         transform: translateY(3px) !important;
-        box-shadow: 0px 1px 0px #334155 !important;
+        box-shadow: 0px 1px 0px #0F172A !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -138,7 +169,6 @@ elif st.session_state.gacha_step == "revealed":
     """, unsafe_allow_html=True)
     if "전설" in tier: st.balloons()
     
-    # 🛠️ 확인(계속하기) / 도감 보기 버튼 분리 적용
     col_confirm1, col_confirm2 = st.columns(2)
     with col_confirm1:
         if st.button("확인", use_container_width=True):
@@ -156,10 +186,9 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    # 🎨 힌트 및 입력 상태에 따른 퀴즈 박스 텍스트 결정
     if st.session_state.status == "hint":
-        # 틀렸을 때 대기 시간 없이 첫 번째 숫자를 빨간색으로 즉시 고정
-        p1 = f"<span style='color:red;'>{st.session_state.factor1}</span>"
+        # 🚨 모바일 시인성을 위해 힌트 빨간색을 더 쨍하고 선명한 딥레드(#E03131)로 고정
+        p1 = f"<span style='color: #E03131; font-weight: 900;'>{st.session_state.factor1}</span>"
         p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
     else:
         p1 = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
@@ -167,7 +196,6 @@ if st.session_state.gacha_step == "idle":
     
     st.markdown(f"<div class='quiz-box'>{st.session_state.target_product} = [ {p1} ] × [ {p2} ]</div>", unsafe_allow_html=True)
 
-    # 🔒 정답 처리 중(대기 시간)일 때만 가상 키보드를 물리적으로 잠급니다.
     is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
 
     # ⌨️ 숫자 키패드 구역
@@ -182,7 +210,6 @@ if st.session_state.gacha_step == "idle":
                     st.rerun()
 
     if st.button("⌫ 지우기", use_container_width=True, disabled=is_keyboard_locked):
-        # 힌트 상태일 때 지우기를 누르면 완전히 초기화되어 처음부터 다시 풀 수 있게 유도
         if st.session_state.status == "hint":
             st.session_state.inputs = []
             st.session_state.status = "playing"
@@ -190,14 +217,12 @@ if st.session_state.gacha_step == "idle":
             st.session_state.inputs.pop()
         st.rerun()
 
-    # 🎉 정답 효과창 지연 처리 (버그 방지용)
     if "last_reward" in st.session_state:
         st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)
         next_question()
         st.rerun()
 
-    # 입력 완료 시 실시간 검증 로직
     if len(st.session_state.inputs) == 2 and st.session_state.is_answered:
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
@@ -206,13 +231,12 @@ if st.session_state.gacha_step == "idle":
             st.session_state.gold += reward
             st.session_state.game_score += 1
             st.session_state.last_reward = reward
-            st.session_state.status = "correct_waiting" # 중복 연타 원천 잠금 상태
+            st.session_state.status = "correct_waiting"
             
             force_file_save()
             st.rerun()
         else:
-            # 💡 [핵심 변경] 시간 끌지 않고 즉시 상태를 힌트로 바꾼 뒤 입력 데이터를 강제로 셋팅
             st.session_state.status = "hint"
-            st.session_state.inputs = [st.session_state.factor1] # 첫 번째 답 보정 제공
+            st.session_state.inputs = [st.session_state.factor1]
             st.session_state.is_answered = False
             st.rerun()
