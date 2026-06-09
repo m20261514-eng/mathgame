@@ -23,12 +23,15 @@ def next_question():
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_answer = st.session_state.factor1 * st.session_state.factor2
     st.session_state.inputs = []
+    st.session_state.status = "playing" # 게임 상태 초기화 (키보드 잠금 해제)
 
 # 세션 상태 초기화
 if "game_score" not in st.session_state:
     st.session_state.game_score = 0
     st.session_state.inputs = []
     st.session_state.gacha_step = "idle"
+    st.session_state.status = "playing" # 상태 관리용 (playing / correct_waiting)
+    st.session_state.last_reward = 0
     st.session_state.revealed_animal = None
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
@@ -161,7 +164,6 @@ elif st.session_state.gacha_step == "revealed":
     
     col_confirm1, col_confirm2 = st.columns(2)
     with col_confirm1:
-        # 🛠️ [핵심 수정] 뽑기 확인 버튼 클릭 시, 강제로 새 문제를 공급하여 자연스럽게 인게임 유도
         if st.button("확인", use_container_width=True):
             st.session_state.gacha_step = "idle"
             next_question() 
@@ -179,19 +181,27 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    notice_box = st.empty()
+    # 🛠️ [핵심 수정] 정답 판정 후 1.5초 대기 시 화면 렌더링을 위한 최상단 흐름
+    if st.session_state.status == "correct_waiting":
+        st.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
+        time.sleep(1.5)
+        next_question()
+        st.rerun()
 
     user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
     
     # 문제 출제 상자
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
 
+    # 🛠️ [핵심 수정] 정답을 맞힌 상태(correct_waiting)일 경우 모든 키패드 변수에 잠금(True) 처리
+    is_locked = (st.session_state.status == "correct_waiting")
+
     # 1 ~ 9 나뭇잎 초록색 키패드 매트릭스 배치
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_locked):
                 if len(st.session_state.inputs) < 2:
                     st.session_state.inputs.append(num)
                     st.rerun()
@@ -199,32 +209,31 @@ if st.session_state.gacha_step == "idle":
     # 지우기, 0, 확인 키패드 하단 제어 행
     last_row_cols = st.columns(3)
     
-    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True):
+    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True, disabled=is_locked):
         if len(st.session_state.inputs) > 0:
             st.session_state.inputs.pop()
             st.rerun()
             
-    if last_row_cols[1].button("0", key="pad_0", use_container_width=True):
+    if last_row_cols[1].button("0", key="pad_0", use_container_width=True, disabled=is_locked):
         if len(st.session_state.inputs) < 2:
             st.session_state.inputs.append(0)
             st.rerun()
             
-    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True):
+    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True, disabled=is_locked):
         if st.session_state.inputs:
             user_val = int("".join(map(str, st.session_state.inputs)))
             
             if user_val == st.session_state.target_answer:
+                # 보상 계산 및 상태 변경
                 reward = random.randint(8, 13)
                 st.session_state.gold += reward
                 st.session_state.game_score += 1
-                
-                notice_box.success(f"🎉 정답입니다! 마법 나무가 +{reward}G 보상을 떨어뜨렸습니다!")
+                st.session_state.last_reward = reward
+                st.session_state.status = "correct_waiting" # 🔒 상태 변경: 키보드 즉시 잠금
                 force_file_save()
                 
-                time.sleep(1.5)
-                
-                next_question()
-                st.rerun()
+                # 상태가 업데이트된 채로 화면을 다시 그림 -> 위쪽의 success 메시지 + 키보드 잠김
+                st.rerun() 
             else:
                 st.session_state.inputs = []
                 st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
