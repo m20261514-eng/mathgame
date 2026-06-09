@@ -23,6 +23,8 @@ def next_question():
     st.session_state.inputs = []
     st.session_state.status = "playing"
     st.session_state.is_answered = False
+    if "last_reward" in st.session_state:
+        del st.session_state.last_reward
 
 if "game_score" not in st.session_state:
     st.session_state.game_score = 0
@@ -68,7 +70,7 @@ st.markdown("""
     .animal-name { font-size: 32px; font-weight: bold; }
     .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; margin-bottom: 20px; }
     
-    /* 🛠️ [도각도각 기본 노란색 입체 버튼 디자인] */
+    /* 🛠️ 도각도각 노란색 입체 버튼 디자인 */
     div[data-testid="stButton"] button { 
         font-size: 32px !important; 
         font-weight: bold !important;
@@ -78,24 +80,16 @@ st.markdown("""
         height: 68px !important; 
         width: 100% !important; 
         border: none !important;
-        
-        /* 입체감을 살리는 찐한 노란색 아랫쪽 입체 테두리(그림자) */
         box-shadow: 0px 6px 0px #D6B21E !important; 
         transition: all 0.05s ease-in-out !important;
     }
-    
-    /* 버튼 위에 마우스를 슬쩍 올렸을 때 색상 변화 */
-    div[data-testid="stButton"] button:hover {
-        background-color: #FFE169 !important;
-    }
-
-    /* 💥 [핵심] 버튼을 터치/클릭하여 꾹 눌렀을 때 도각 하고 내려앉는 모션 효과 */
+    div[data-testid="stButton"] button:hover { background-color: #FFE169 !important; }
     div[data-testid="stButton"] button:active {
-        transform: translateY(4px) !important; /* 아래로 4픽셀 쏙 내려감 */
-        box-shadow: 0px 2px 0px #D6B21E !important; /* 밑면 테두리도 얇아짐 */
+        transform: translateY(4px) !important;
+        box-shadow: 0px 2px 0px #D6B21E !important;
     }
 
-    /* 우측 상단 '로비로' 가는 버튼 전용 디자인 (이건 너무 커지지 않게 원래 비율 유지) */
+    /* 우측 상단 '로비로' 가는 버튼 전용 디자인 */
     .lobby-btn button { 
         background-color: #475569 !important; 
         color: white !important; 
@@ -113,7 +107,6 @@ st.markdown("""
 cols_nav = st.columns([3, 1])
 with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
 with cols_nav[1]:
-    # CSS 클래스를 깔끔하게 먹이기 위해 전용 div로 감싸줍니다.
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
         force_file_save()
@@ -154,40 +147,39 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
-    # 정답을 맞혔을 때의 화면 연출 및 대기 처리 분리
-    if st.session_state.status == "correct":
+    # ⌨️ 상태에 무관하게 키패드는 상시 유지됩니다.
+    key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    for row in key_matrix:
+        pad_cols = st.columns(3)
+        for i, num in enumerate(row):
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
+                # 힌트나 정답 대기 상태가 아닐 때만 입력 허용
+                if len(st.session_state.inputs) < 2 and st.session_state.status == "playing":
+                    st.session_state.inputs.append(num)
+                    st.session_state.is_answered = True
+                    st.rerun()
+
+    if st.button("⌫ 지우기", use_container_width=True):
+        if len(st.session_state.inputs) > 0 and st.session_state.status == "playing":
+            st.session_state.inputs.pop()
+        st.rerun()
+
+    # 🟢 [수정 완료] 정답 효과창이 키보드 최하단으로 이동!
+    if "last_reward" in st.session_state:
         st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
-        time.sleep(1.5)  # 축하 메시지를 보여주는 지연 시간 (이 동안 패드는 숨겨짐)
+        time.sleep(1.5)
         next_question()
         st.rerun()
 
-    if st.session_state.status == "playing":
-        key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        for row in key_matrix:
-            pad_cols = st.columns(3)
-            for i, num in enumerate(row):
-                if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
-                    if len(st.session_state.inputs) < 2:
-                        st.session_state.inputs.append(num)
-                        st.session_state.is_answered = True
-                        st.rerun()
-
-        if st.button("⌫ 지우기", use_container_width=True):
-            if len(st.session_state.inputs) > 0:
-                st.session_state.inputs.pop()
-            st.rerun()
-
-    # 입력 완료 시 검증 로직 변경 (중복 클릭 원천 차단)
+    # 입력 완료 시 검증 로직
     if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and st.session_state.is_answered:
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
             reward = random.randint(8, 13)
             
-            # 즉시 점수와 골드를 지급하고 상태를 'correct'로 바꾸어 패드를 숨깁니다.
             st.session_state.gold += reward
             st.session_state.game_score += 1
-            st.session_state.last_reward = reward  # 화면 표시용 보상 금액 저장
-            st.session_state.status = "correct"
+            st.session_state.last_reward = reward  # 화면 최하단에 정답을 띄우기 위해 보상액 임시 저장
             
             force_file_save()
             st.rerun()
