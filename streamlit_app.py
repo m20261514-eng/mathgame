@@ -103,12 +103,6 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-    /* 🛠️ 로그인 박스 테두리 및 그림자 제거 완료 */
-    .login-box {
-        background: #FFFDF0; padding: 30px; border-radius: 20px;
-        margin-top: 50px; text-align: center;
-    }
-    </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", unsafe_allow_html=True)
