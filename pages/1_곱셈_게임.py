@@ -23,15 +23,11 @@ def next_question():
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_answer = st.session_state.factor1 * st.session_state.factor2
     st.session_state.inputs = []
-    st.session_state.status = "playing"
-    if "last_reward" in st.session_state:
-        del st.session_state.last_reward
 
 # 세션 상태 초기화
 if "game_score" not in st.session_state:
     st.session_state.game_score = 0
     st.session_state.inputs = []
-    st.session_state.status = "playing"
     st.session_state.gacha_step = "idle"
     st.session_state.revealed_animal = None
     st.session_state.factor1 = random.randint(2, 9)
@@ -64,14 +60,12 @@ def start_gacha():
 # --- 🌲 [마법의 숲] 힐링 그린 그라데이션 CSS 스타일링 🌲 ---
 st.markdown("""
 <style>
-/* 생명력 넘치는 울창한 깊은 숲 ~ 햇살 연두색 힐링 그라데이션 배경 */
 .stApp { 
     background: linear-gradient(135deg, #134E3A 0%, #2D6A4F 40%, #52B788 80%, #D8F3DC 100%) !important; 
     color: #111111 !important; 
 }
 [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: transparent; }
 
-/* 타이틀 폰트 스타일 */
 .game-title {
     font-size: 5.2vw;
     font-weight: bold;
@@ -84,7 +78,6 @@ st.markdown("""
     .game-title { font-size: 2.1rem !important; }
 }
 
-/* 📱 모바일 3열 강제 유지 */
 [data-testid="stHorizontalBlock"] {
     display: flex !important;
     flex-direction: row !important;
@@ -97,21 +90,18 @@ st.markdown("""
     min-width: 0 !important;
 }
 
-/* 숲속 퀴즈 박스 디자인 */
 .quiz-box { 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #1B4332 !important; 
     border: 5px solid #74C69D; box-shadow: 0px 8px 0px rgba(45, 106, 79, 0.3); margin-bottom: 30px; 
 }
 
-/* 대시보드 스코어 보드 */
 .dashboard { 
     background: #E8F5E9; padding: 15px; border-radius: 20px; border: 3px solid #2D6A4F; 
     font-size: 22px; font-weight: bold; color: #1B4332 !important; display: flex; justify-content: space-between; 
     box-shadow: 0px 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px;
 }
 
-/* 🌿 단색 나뭇잎 초록색 입체 키패드 커스텀 */
 div[data-testid="stButton"] button { 
     font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #40916C !important; color: #FFFFFF !important; height: 68px !important; 
@@ -125,14 +115,12 @@ div[data-testid="stButton"] button:disabled {
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
 }
 
-/* 🏠 상단 네비 바 로비 버튼 */
 .lobby-btn button { 
     background-color: #1B4332 !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 17px !important; box-shadow: 0px 4px 0px #081C15 !important; font-weight: bold !important;
 }
 .lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #081C15 !important; }
 
-/* 캡슐 흔들림 애니메이션 */
 @keyframes leaf-vibrate { 0% { transform: translate(0) rotate(0deg); } 20% { transform: translate(-4px, 4px) rotate(-3deg); } 40% { transform: translate(-4px, -4px) rotate(3deg); } 60% { transform: translate(4px, 4px) rotate(-3deg); } 80% { transform: translate(-4px, -4px) rotate(3deg); } 100% { transform: translate(0) rotate(0deg); } }
 .capsule-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: leaf-vibrate 0.14s linear infinite; }
 .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 20px 0; }
@@ -188,19 +176,20 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
+    # 🛠️ [핵심 수정] 정답/오답 메시지가 깔끔하게 들어갈 동적 알림 상자 정의
+    notice_box = st.empty()
+
     user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
     
     # 문제 출제 상자
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
-
-    is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
 
     # 1 ~ 9 나뭇잎 초록색 키패드 매트릭스 배치
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
                 if len(st.session_state.inputs) < 2:
                     st.session_state.inputs.append(num)
                     st.rerun()
@@ -208,35 +197,37 @@ if st.session_state.gacha_step == "idle":
     # 지우기, 0, 확인 키패드 하단 제어 행
     last_row_cols = st.columns(3)
     
-    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True, disabled=is_keyboard_locked):
+    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True):
         if len(st.session_state.inputs) > 0:
             st.session_state.inputs.pop()
             st.rerun()
             
-    if last_row_cols[1].button("0", key="pad_0", use_container_width=True, disabled=is_keyboard_locked):
+    if last_row_cols[1].button("0", key="pad_0", use_container_width=True):
         if len(st.session_state.inputs) < 2:
             st.session_state.inputs.append(0)
             st.rerun()
             
-    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True, disabled=is_keyboard_locked):
+    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True):
         if st.session_state.inputs:
             user_val = int("".join(map(str, st.session_state.inputs)))
+            
+            # 💡 [정답 판단 로직 최적화]
             if user_val == st.session_state.target_answer:
                 reward = random.randint(8, 13)
                 st.session_state.gold += reward
                 st.session_state.game_score += 1
-                st.session_state.last_reward = reward
-                st.session_state.status = "correct_waiting"
+                
+                # 1. 화면에 정답 성공 안내를 즉시 출력합니다.
+                notice_box.success(f"🎉 정답입니다! 마법 나무가 +{reward}G 보상을 떨어뜨렸습니다!")
                 force_file_save()
+                
+                # 2. 학생이 정답을 확인할 수 있도록 1.5초간 화면을 일시 정지합니다.
+                time.sleep(1.5)
+                
+                # 3. 다음 문제를 생성하고 화면을 리프레시합니다.
+                next_question()
                 st.rerun()
             else:
                 st.session_state.inputs = []
                 st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
                 st.rerun()
-
-    # 정답 딜레이 및 보상 처리 이펙트
-    if "last_reward" in st.session_state:
-        st.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
-        time.sleep(1.5)
-        next_question()
-        st.rerun()
