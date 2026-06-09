@@ -79,46 +79,21 @@ st.markdown("""
     }
     .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.2rem; margin-bottom: 30px;}
     
-    # --- 🏠 기존 st.button 대신 확실하게 글자가 커지는 HTML 버튼으로 교체 ---
-    col1, col2 = st.columns(2)
+    /* 🛠️ [해결책] 어떤 스트림릿 버전이든 강제로 버튼 글자 크기를 35px로 키우는 울트라 핵 */
+    div[data-testid="stButton"] button p {
+        font-size: 35px !important;
+        font-weight: bold !important;
+    }
     
-    with col1:
-        # 역곱셈 게임 입장 버튼 (원하는 대로 font-size: 32px 숫자를 변경하여 조절 가능!)
-        st.markdown("""
-            <a href="/역곱셈_게임" target="_self" style="text-decoration: none;">
-                <div style="
-                    display: block; width: 100%; padding: 20px 0; text-align: center;
-                    font-size: 32px; font-weight: bold; border-radius: 20px;
-                    background: linear-gradient(90deg, #FFF9C6 0%, #BDF6F6 100%);
-                    color: #2D2D2D; border: 4px solid #FFD93D;
-                    box-shadow: 0 8px 0 #FFD93D55; cursor: pointer;
-                ">
-                    ⚔️ 역곱셈 게임 입장
-                </div>
-            </a>
-        """, unsafe_allow_html=True)
-        # 페이지 전환 전 데이터 안전 저장용 트리거
-        if st.active_script_run_ctx:
-            save_user_data()
-
-    with col2:
-        # 나눗셈 게임 입장 버튼
-        st.markdown("""
-            <a href="/나눗셈_게임" target="_self" style="text-decoration: none;">
-                <div style="
-                    display: block; width: 100%; padding: 20px 0; text-align: center;
-                    font-size: 32px; font-weight: bold; border-radius: 20px;
-                    background: linear-gradient(90deg, #FFF9C6 0%, #BDF6F6 100%);
-                    color: #2D2D2D; border: 4px solid #FFD93D;
-                    box-shadow: 0 8px 0 #FFD93D55; cursor: pointer;
-                ">
-                    🏹 나눗셈 게임 입장
-                </div>
-            </a>
-        """, unsafe_allow_html=True)
-        if st.active_script_run_ctx:
-            save_user_data()
-    button[kind="primary"]:hover { background: #FFE77C !important; transform: scale(1.03) !important; }
+    /* 버튼 배경 및 테두리 설정 */
+    div[data-testid="stButton"] button {
+        display: block !important; width: 100% !important; padding: 15px 0 !important;
+        border-radius: 20px !important;
+        background: linear-gradient(90deg, #FFF9C6 0%, #BDF6F6 100%) !important;
+        color: #2D2D2D !important; border: 4px solid #FFD93D !important;
+        box-shadow: 0 8px 0 #FFD93D55 !important; transition: 0.1s all ease !important; height: auto !important;
+    }
+    div[data-testid="stButton"] button:hover { background: #FFE77C !important; transform: scale(1.03) !important; }
     
     .tier-title {
         font-size: 1.2rem; font-weight: bold; color: #4A4A4A;
@@ -135,6 +110,11 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
+    .login-box {
+        background: white; padding: 30px; border-radius: 20px;
+        margin-top: 50px; text-align: center;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", unsafe_allow_html=True)
@@ -180,11 +160,11 @@ else:
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⚔️ 역곱셈 게임 입장", use_container_width=True, type="primary"):
+        if st.button("⚔️ 역곱셈 게임 입장", use_container_width=True):
             save_user_data()
             st.switch_page("pages/1_역곱셈_게임.py")
     with col2:
-        if st.button("🏹 나눗셈 게임 입장", use_container_width=True, type="primary"):
+        if st.button("🏹 나눗셈 게임 입장", use_container_width=True):
             save_user_data()
             st.switch_page("pages/2_나눗셈_게임.py")
 
