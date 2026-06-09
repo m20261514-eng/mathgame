@@ -104,7 +104,7 @@ st.markdown("""
         background-color: #475569 !important; 
         color: white !important; 
         height: 45px !important; 
-        font-size: 18px !important; 
+        font-size: 25px !important; 
         box-shadow: 0px 4px 0px #334155 !important;
     }
     .lobby-btn button:active {
