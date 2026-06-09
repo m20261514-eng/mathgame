@@ -62,6 +62,20 @@ st.markdown("""
     .stApp { background-color: #FFFDF0; color: #111111 !important; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     
+    /* 📱 [모바일 대응 반응형 타이틀 패치] */
+    .game-title {
+        font-size: 7.5vw; /* 화면 폭에 맞춰 글자 크기 축소 */
+        font-weight: bold;
+        color: #111111;
+        margin: 0;
+        white-space: nowrap; /* 자동 줄바꿈 원천 차단 */
+    }
+    @media (min-width: 600px) {
+        .game-title {
+            font-size: 2.3rem !important; /* PC에서는 적당한 고정 크기 유지 */
+        }
+    }
+
     /* 📱 [모바일 3열 강제 유지 핵심 치트] */
     [data-testid="stHorizontalBlock"] {
         display: flex !important;
@@ -115,8 +129,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# 🛠️ 기존 st.title 대신 반응형 스타일 텍스트 클래스를 적용했습니다.
 cols_nav = st.columns([3, 1])
-with cols_nav[0]: st.title("⚔️ 역곱셈 게임")
+with cols_nav[0]: 
+    st.markdown("<h2 class='game-title'>⚔️ 역곱셈 게임</h2>", unsafe_allow_html=True)
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
