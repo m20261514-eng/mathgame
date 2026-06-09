@@ -44,21 +44,32 @@ if "gold" not in st.session_state:
 if "my_collection" not in st.session_state:
     st.session_state.my_collection = set()
 
-# 2. 동물 데이터 정의
+# 2. 게임별 동물 데이터 정의 (총 3종류)
+# [곱셈 게임용 동물 - 사파리/초원 컨셉]
 multiply_animals = {
+    "일반": ["🐶 강아지", "🐷 아기돼지", "🐑 양", "🐴 망아지", "🦌 사슴", "🦒 기린", "🦘 캥거루", "🦥 나무늘보"],
+    "희귀": ["🦓 얼룩말", "🦏 코뿔소", "🦛 하마", "🦍 고릴라", "🐅 벵갈 호랑이", "🐆 표범", "🐊 악어", "🐘 아기 코끼리"],
+    "전설": ["🦕 브라키오사우루스", "🦅 대왕 독수리", "🦄 신성한 페가수스", "🐉 푸른 청룡"]
+}
+
+# [역곱셈 게임용 동물 - 숲속/마법 컨셉]
+reverse_multiply_animals = {
     "일반": ["🐿️ 다람쥐", "🐥 병아리", "🐹 햄스터", "🐰 토끼", "🦔 도치", "🐭 생쥐", "🐱고양이", "🐻곰돌이"],
     "희귀": ["🦊🔥 불꽃여우", "🐱✨ 우주고양이", "🐧❄️ 아기 펭귄", "🐼 푸바오", "🐨 코알라", "🐺 은빛 늑대", "🦫 카피바라", "🐿️🌰 볼빵빵 다람쥐"],
     "전설": ["🐲 황금용", "🌈🦄 레인보우 유니콘", "🦁👑 사자왕", "🏆🐯 위대한 호랑이"]
 }
 
+# [나눗셈 게임용 동물 - 곤충/바다 컨셉]
 divide_animals = {
     "일반": ["🦋 나비", "🐝 꿀벌", "🐞 무당벌레", "🐌 달팽이", "🐜 개미", "🐟 물고기", "🐸 개구리", "🦀 꽃게"],
     "희귀": ["🦑 오징어징어", "🦐 안녕하새우", "🐡 뾰족 복어", "🐢 조용한 거북이", "🦎 우파루파", "💎🐟 보석 물고기", "🐍스르륵 아기뱀", "🌈🐠 레인보우 열대어"],
     "전설": ["🔱🐳 바다의 신 고래", "👑🐸 개구리 왕자", "🦈 심해의 메가로돈", "🦖 티라노사우루스"]
 }
 
+# 전체 도감 카운트를 위해 동물 리스트 합치기
 all_animals = []
 for tier in multiply_animals.values(): all_animals.extend(tier)
+for tier in reverse_multiply_animals.values(): all_animals.extend(tier)
 for tier in divide_animals.values(): all_animals.extend(tier)
 
 # CSS 디자인 스타일링
@@ -116,7 +127,7 @@ st.markdown("""
     }
     
     div[data-testid="stButton"] button p {
-        font-size: 22px !important;
+        font-size: 18px !important;
         font-weight: bold !important;
     }
     
@@ -144,7 +155,6 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-
     div[data-testid="stTextInput"] input {
         background-color: #F1F3F5 !important;
         color: #212529 !important;
@@ -200,26 +210,30 @@ else:
 
     st.markdown(f"<h3 style='text-align:center; color:#099268; margin-bottom:5px;'>💰 통합 보유 골드: {st.session_state.gold} G</h3>", unsafe_allow_html=True)
     
-    # 🛠️ 반응형 줄바꿈이 내장된 HTML 태그 구조 유지
     st.markdown("<div class='guide-text'>훈련장에 도전하여<br>전설의 생물을 부화시킬 골드를 모으세요!</div>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    # 1.곱셈, 2.역곱셈, 3.나눗셈 순서로 버튼 배치
+    col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("⚔️ 역곱셈 게임 입장", use_container_width=True):
+        if st.button("⚔️ 곱셈 게임", use_container_width=True):
             save_user_data()
-            st.switch_page("pages/1_역곱셈_게임.py")
+            st.switch_page("pages/1_곱셈_게임.py")
     with col2:
-        if st.button("🏹 나눗셈 게임 입장", use_container_width=True):
+        if st.button("🛡️ 역곱셈 게임", use_container_width=True):
             save_user_data()
-            st.switch_page("pages/2_나눗셈_게임.py")
+            st.switch_page("pages/2_역곱셈_게임.py")
+    with col3:
+        if st.button("🏹 나눗셈 게임", use_container_width=True):
+            save_user_data()
+            st.switch_page("pages/3_나눗셈_게임.py")
 
     st.write("---")
 
     st.markdown("### 🦁 나의 신비한 동물 도감")
     st.write(f"📊 **전체 마스터 등급 수집률:** {len(st.session_state.my_collection)} / {len(all_animals)} 마리")
 
-# ⚠️ 위쪽의 기존 코드들과 들여쓰기 라인이 똑같이 맞아야 합니다.
-    tab1, tab2 = st.tabs(["🐣 역곱셈 도감", "🤿 나눗셈 도감"])
+    # 도감 탭도 1.곱셈, 2.역곱셈, 3.나눗셈 순서로 분할
+    tab1, tab2, tab3 = st.tabs(["⚔️ 곱셈 도감", "🐣 역곱셈 도감", "🤿 나눗셈 도감"])
 
     def draw_zoo_grid(animal_dict):
         for tier, title_list in animal_dict.items():
@@ -228,7 +242,6 @@ else:
             for idx, animal_string in enumerate(title_list):
                 col_target = cols[idx % 4]
                 
-                # 공백으로 쪼갠 후 이모지를 제외한 원래 이름 전체 복원
                 parts = animal_string.split()
                 emoji = parts[0]
                 name = " ".join(parts[1:])
@@ -239,11 +252,13 @@ else:
                     card_html = f"<div class='animal-card-locked'><span class='animal-emoji' style='filter: grayscale(100%);'>❓</span>🔒 미획득</div>"
                 col_target.markdown(card_html, unsafe_allow_html=True)
 
-    # 💡 이 아래 두 줄의 시작 위치(들여쓰기)가 tab1, tab2 정의한 라인과 똑같아야 합니다!
     with tab1: 
         draw_zoo_grid(multiply_animals)
         
-    with tab2: 
+    with tab2:
+        draw_zoo_grid(reverse_multiply_animals)
+        
+    with tab3: 
         draw_zoo_grid(divide_animals)
 
     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
