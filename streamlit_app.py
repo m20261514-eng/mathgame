@@ -144,14 +144,6 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-    .login-box {
-        background: #FFFDF0 !important; 
-        padding: 25px 15px; 
-        border-radius: 20px;
-        border: 3px dashed #FFD93D;
-        margin-top: 25px; 
-        text-align: center;
-    }
 
     div[data-testid="stTextInput"] input {
         background-color: #F1F3F5 !important;
