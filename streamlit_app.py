@@ -127,7 +127,7 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", unsafe_allow_html=True)
 
