@@ -47,7 +47,7 @@ def make_division_question():
     if "last_reward" in st.session_state:
         del st.session_state.last_reward
 
-# 🛠️ [방어 코드] 개별 변수 세션 초기화 (AttributeError 원천 차단)
+# 🛠️ 세션 상태 초기화 (AttributeError 원천 차단)
 if 'score' not in st.session_state: st.session_state.score = 0
 if 'inputs' not in st.session_state: st.session_state.inputs = []
 if 'status' not in st.session_state: st.session_state.status = "playing"
@@ -59,14 +59,14 @@ if 'is_answered' not in st.session_state: st.session_state.is_answered = False
 if 'dividend' not in st.session_state or 'divisor' not in st.session_state or 'correct_answer' not in st.session_state:
     make_division_question()
 
-# 🛸 [요청 반영] 우주 테마 콜렉션 데이터 세팅
+# 우주 테마 콜렉션 데이터 세팅
 animals_data = {
     "일반": ["🔩 우주 나사", "📡 녹슨 안테나", "🔭 소형 망원경", "🔧 우주 스패너", "🛰️ 낡은 위성"],
     "희귀": ["🐭 우주 실험쥐", "🤖 고장난 로봇", "🛸 은하수 순찰 UFO", "🚀 꼬마 로켓", "👾 픽셀 몬스터"],
     "전설": ["👽 초록 외계인", "🐰 달토끼", "🧬 돌연변이 우주 슬라임", "🌙 초승달 은빛 고양이", "🌟 반짝이는 초신성"]
 }
 
-# 우주 알뽑기 로직
+# [수정] 빛나는 운석 뽑기 로직
 def start_gacha():
     if st.session_state.gold >= 100:
         st.session_state.gold -= 100
@@ -82,12 +82,12 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🪐")
 
-# --- 🌌 [화려한 보라 & 분홍] 우주 테마 CSS ---
+# --- 🌌 우주 테마 CSS ---
 background_html = f"""
 <div class="custom-space-bg"></div>
 
 <style>
-/* 1. 배경화면 고정 레이어 (딥한 우주 연출을 위한 블러 및 밝기 조절) */
+/* 1. 배경화면 고정 레이어 */
 .custom-space-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -140,7 +140,6 @@ section.main,
 [data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
 [data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
-/* 퀴즈 박스 - 신비로운 보라 엣지 */
 .quiz-box {{ 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #2D004D !important; 
@@ -152,21 +151,19 @@ section.main,
     background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 12px; text-align: center; margin-top: 10px;
 }}
 
-/* 대시보드 - 세련된 핑크 퍼플 네온 그라데이션 경계 */
 .dashboard {{ 
     background: rgba(243, 230, 255, 0.92); padding: 15px; border-radius: 20px; border: 3px solid #FF007F; 
     font-size: 22px; font-weight: bold; color: #4A004A !important; display: flex; justify-content: space-between; margin-bottom: 20px; 
     box-shadow: 0px 4px 12px rgba(255, 0, 127, 0.2);
 }}
 
-/* 뽑기 연출 애니메이션 */
-@keyframes vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-4px, 4px) rotate(-2deg); }} 40% {{ transform: translate(-4px, -4px) rotate(2deg); }} 60% {{ transform: translate(4px, 4px) rotate(-2deg); }} 80% {{ transform: translate(4px, -4px) rotate(2deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
-.egg-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.14s linear infinite; }}
+/* [수정] 운석 충돌 진동 애니메이션 효과 */
+@keyframes vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-5px, 5px) rotate(-3deg); }} 40% {{ transform: translate(-5px, -5px) rotate(3deg); }} 60% {{ transform: translate(5px, 5px) rotate(-3deg); }} 80% {{ transform: translate(5px, -5px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
+.meteor-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.12s linear infinite; }}
 .reveal-card {{ background: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FF007F; box-shadow: 0 10px 30px rgba(255, 0, 127, 0.3); margin: 20px 0; }}
 .animal-icon {{ font-size: 100px; }}
 .animal-name {{ font-size: 38px; font-weight: bold; color: #2D004D !important; }}
 
-/* ⌨️ 입체 계산기 키패드 - 네온 보라 & 클릭 시 핑크 전환 효과 */
 div[data-testid="stButton"] button {{ 
     font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #8A2BE2 !important; color: #FFFFFF !important; height: 68px !important; 
@@ -180,7 +177,6 @@ div[data-testid="stButton"] button:disabled {{
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
 }}
 
-/* 🏠 상단 로비 버튼 전용 디자인 */
 .lobby-btn button {{ 
     background-color: rgba(45, 0, 77, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 18px !important; box-shadow: 0px 4px 0px #1A0033 !important; font-weight: bold !important;
@@ -212,9 +208,9 @@ with cols_header[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
-# 가챠(알뽑기) 연출 단계 처리
+# [수정] 가챠(빛나는 운석 뽑기) 연출 단계 처리
 if st.session_state.gacha_step == "shaking":
-    st.markdown("<span class='egg-shaking'>🥚</span>", unsafe_allow_html=True)
+    st.markdown("<span class='meteor-shaking'>☄️</span>", unsafe_allow_html=True) # 운석 이모지로 변경 및 흔들기 연출
     time.sleep(2.0)
     st.session_state.gacha_step = "revealed"
     st.rerun()
@@ -242,8 +238,9 @@ elif st.session_state.gacha_step == "revealed":
 
 # 기본 플레이 화면 UI 로드
 if st.session_state.gacha_step == "idle":
-    with st.expander("🪐 [신비의 우주 알뽑기 상점]", expanded=False):
-        st.button("🔮 알뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
+    # [수정] 알뽑기 상점에서 '빛나는 운석 뽑기 상점'으로 변경
+    with st.expander("☄️ [빛나는 운석 뽑기 상점]", expanded=False):
+        st.button("🔮 운석 파편 분석 시작! (100 G)", on_click=start_gacha, use_container_width=True)
     
     if st.session_state.status == "hint":
         p_ans = "<span style='color: #FF007F; font-weight: 900;'> ? </span>"
