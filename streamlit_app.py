@@ -68,32 +68,49 @@ st.markdown("""
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     
     @keyframes chromatic-aberration {
-        0%, 100% { text-shadow: -2px 0 #FF00FF, 2px 0 #00FFFF, 0 0 30px rgba(0, 0, 0, 0.4); }
-        50% { text-shadow: -3px 0 #FF00FF, 3px 0 #00FFFF, 0 0 30px rgba(0, 0, 0, 0.4); }
+        0%, 100% { text-shadow: -2px 0 #FF00FF, 2px 0 #00FFFF, 0 0 20px rgba(0, 0, 0, 0.2); }
+        50% { text-shadow: -3px 0 #FF00FF, 3px 0 #00FFFF, 0 0 20px rgba(0, 0, 0, 0.2); }
     }
-    .main-title {
-        font-size: 3rem; font-weight: bold; color: #000000; text-align: center;
-        margin-bottom: 20px; margin-top: 15px; letter-spacing: 2px;
-        white-space: nowrap; animation: chromatic-aberration 2s ease-in-out infinite;
-        display: inline-block; width: 100%;
-    }
-    .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.2rem; margin-bottom: 30px;}
     
-    /* 🛠️ [해결책] 어떤 스트림릿 버전이든 강제로 버튼 글자 크기를 25px로 키우는 울트라 핵 */
+    /* 📱 [모바일 대응 반응형 타이틀 수정] */
+    .main-title {
+        font-size: 8vw; /* 화면 너비에 맞춰 자동 조절 */
+        font-weight: bold; 
+        color: #000000; 
+        text-align: center;
+        margin-bottom: 15px; 
+        margin-top: 10px; 
+        letter-spacing: 1px;
+        white-space: nowrap; 
+        animation: chromatic-aberration 2s ease-in-out infinite;
+        display: inline-block; 
+        width: 100%;
+    }
+    
+    /* 화면이 넓은 PC 모니터용 해상도 가드라인 (일정 크기 이상 커지지 않게 고정) */
+    @media (min-width: 600px) {
+        .main-title {
+            font-size: 2.5rem !important;
+        }
+    }
+    
+    .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.1rem; margin-bottom: 25px;}
+    
+    /* 🛠️ 버튼 글자 크기도 모바일 환경에 깨지지 않도록 적정 선인 22px로 조절 */
     div[data-testid="stButton"] button p {
-        font-size: 25px !important;
+        font-size: 22px !important;
         font-weight: bold !important;
     }
     
     /* 버튼 배경 및 테두리 설정 */
     div[data-testid="stButton"] button {
-        display: block !important; width: 100% !important; padding: 15px 0 !important;
+        display: block !important; width: 100% !important; padding: 12px 0 !important;
         border-radius: 20px !important;
         background: linear-gradient(90deg, #FFF9C6 0%, #BDF6F6 100%) !important;
         color: #2D2D2D !important; border: 4px solid #FFD93D !important;
-        box-shadow: 0 8px 0 #FFD93D55 !important; transition: 0.1s all ease !important; height: auto !important;
+        box-shadow: 0 6px 0 #FFD93D55 !important; transition: 0.1s all ease !important; height: auto !important;
     }
-    div[data-testid="stButton"] button:hover { background: #FFE77C !important; transform: scale(1.03) !important; }
+    div[data-testid="stButton"] button:hover { background: #FFE77C !important; transform: scale(1.02) !important; }
     
     .tier-title {
         font-size: 1.2rem; font-weight: bold; color: #4A4A4A;
@@ -112,7 +129,7 @@ st.markdown("""
     
     .login-box {
         background: white; padding: 30px; border-radius: 20px;
-        margin-top: 50px; text-align: center;
+        margin-top: 35px; text-align: center;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -143,9 +160,9 @@ if not st.session_state.logged_in:
 
 # --- 🏠 로그인 성공 시 게임 로비 로드 ---
 else:
-    col_user, col_logout = st.columns([3, 1])
+    col_user, col_logout = st.columns([2, 1])
     with col_user:
-        st.markdown(f"👤 **로그인 정보:** `{st.session_state.current_pin}` 번 대원")
+        st.markdown(f"👤 **정보:** `{st.session_state.current_pin}` 번 대원")
     with col_logout:
         if st.button("🚪 로그아웃", use_container_width=True):
             save_user_data()
