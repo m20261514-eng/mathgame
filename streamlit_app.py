@@ -168,7 +168,7 @@ if not st.session_state.logged_in:
     st.subheader("🔑 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 이어서 모험을 시작하세요!")
     
-    input_pin = st.text_input("숫자 핀번호 입력 (예: 자기 생일 + 좋아하는 숫자 등)", type="password", key="pin_input")
+    input_pin = st.text_input("숫자 핀번호 입력 (예: 나의 반 번호 + 좋아하는 숫자 등)", type="password", key="pin_input")
     
     if st.button("🚀 모험 입장하기", use_container_width=True):
         if input_pin.strip() == "":
