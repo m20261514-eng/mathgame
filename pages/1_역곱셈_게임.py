@@ -16,22 +16,24 @@ def force_file_save():
     with open(f"student_data/{st.session_state.current_pin}.json", "w", encoding="utf-8") as f:
         json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
-if "game_score" not in st.session_state:
-    st.session_state.game_score = 0
-    st.session_state.inputs = []
-    st.session_state.status = "playing"
-    st.session_state.gacha_step = "idle"
-    st.session_state.revealed_animal = None
-    st.session_state.factor1 = random.randint(2, 9)
-    st.session_state.factor2 = random.randint(2, 9)
-    st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
-
 def next_question():
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
     st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
     st.session_state.inputs = []
     st.session_state.status = "playing"
+    st.session_state.is_answered = False
+
+if "game_score" not in st.session_state:
+    st.session_state.game_score = 0
+    st.session_state.inputs = []
+    st.session_state.status = "playing"
+    st.session_state.gacha_step = "idle"
+    st.session_state.revealed_animal = None
+    st.session_state.is_answered = False
+    st.session_state.factor1 = random.randint(2, 9)
+    st.session_state.factor2 = random.randint(2, 9)
+    st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
 
 animals_data = {
     "일반": ["🐿️ 다람쥐", "🐥 병아리", "🐹 햄스터", "🐰 토끼", "🦔 도치", "🐭 생쥐", "🐱고양이", "🐻곰돌이"],
@@ -58,14 +60,14 @@ st.markdown("""
     <style>
     .stApp { background-color: #FFFDF0; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
-    .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 25px; }
-    @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(5px, -5px); } 100% { transform: translate(0); } }
+    .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 30px; }
+    @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
     .egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
     .animal-icon { font-size: 100px; margin-bottom: 10px; }
     .animal-name { font-size: 32px; font-weight: bold; }
-    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; margin-bottom: 20px; }
-    div[data-testid="stButton"] button { font-size: 28px !important; border-radius: 15px !important; background-color: #FFD93D !important; color: #4A4A4A !important; height: 65px !important; width: 100% !important; box-shadow: 0px 5px 0px #E6C229 !important; font-weight: bold !important; }
+    .dashboard { background: #E3FAFC; padding: 15px; border-radius: 20px; border: 2px solid #10B981; font-size: 20px; font-weight: bold; color: #099268; display: flex; justify-content: space-between; }
+    div[data-testid="stButton"] button { font-size: 28px !important; border-radius: 15px !important; background-color: #FFD93D !important; color: #4A4A4A !important; height: 65px !important; width: 100% !important; }
     .lobby-btn button { background-color: #475569 !important; color: white !important; height: 45px !important; font-size: 18px !important; }
     </style>
 """, unsafe_allow_html=True)
@@ -104,21 +106,30 @@ if st.session_state.gacha_step == "idle":
     
     st.markdown(f"<div class='quiz-box'>{st.session_state.target_product} = [ {p1} ] × [ {p2} ]</div>", unsafe_allow_html=True)
 
-    key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    for row in key_matrix:
-        pad_cols = st.columns(3)
-        for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
-                if len(st.session_state.inputs) < 2:
-                    st.session_state.inputs.append(num)
-                    st.rerun()
+    if st.session_state.status == "hint":
+        time.sleep(2.5)
+        st.session_state.inputs = []
+        st.session_state.status = "playing"
+        st.session_state.is_answered = False
+        st.rerun()
 
-    if st.button("⌫ 지우기", use_container_width=True):
-        if len(st.session_state.inputs) > 0:
-            st.session_state.inputs.pop()
+    if st.session_state.status == "playing":
+        key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        for row in key_matrix:
+            pad_cols = st.columns(3)
+            for i, num in enumerate(row):
+                if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
+                    if len(st.session_state.inputs) < 2:
+                        st.session_state.inputs.append(num)
+                        st.session_state.is_answered = True
+                        st.rerun()
+
+        if st.button("⌫ 지우기", use_container_width=True):
+            if len(st.session_state.inputs) > 0:
+                st.session_state.inputs.pop()
             st.rerun()
 
-    if len(st.session_state.inputs) == 2:
+    if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and not st.session_state.is_answered:
         time.sleep(0.4)
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
@@ -126,11 +137,12 @@ if st.session_state.gacha_step == "idle":
             st.success(f"🎉 정답! +{reward}G 획득!")
             st.session_state.game_score += 1
             st.session_state.gold += reward
+            st.session_state.is_answered = True
             force_file_save()
             time.sleep(1.2)
             next_question()
             st.rerun()
         else:
             st.session_state.status = "hint"
-            st.session_state.inputs = [st.session_state.factor1]
+            st.session_state.is_answered = True
             st.rerun()
