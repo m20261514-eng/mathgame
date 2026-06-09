@@ -17,7 +17,7 @@ def force_file_save():
     with open(f"student_data/{st.session_state.current_pin}.json", "w", encoding="utf-8") as f:
         json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
-# 다음 문제 생성
+# 다음 문제 생성 유틸리티
 def next_question():
     st.session_state.factor1 = random.randint(2, 9)
     st.session_state.factor2 = random.randint(2, 9)
@@ -161,13 +161,16 @@ elif st.session_state.gacha_step == "revealed":
     
     col_confirm1, col_confirm2 = st.columns(2)
     with col_confirm1:
+        # 🛠️ [핵심 수정] 뽑기 확인 버튼 클릭 시, 강제로 새 문제를 공급하여 자연스럽게 인게임 유도
         if st.button("확인", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            next_question() 
             force_file_save()
             st.rerun()
     with col_confirm2:
         if st.button("도감 보기", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            next_question()
             force_file_save()
             st.switch_page("streamlit_app.py")
 
@@ -176,7 +179,6 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    # 🛠️ [핵심 수정] 정답/오답 메시지가 깔끔하게 들어갈 동적 알림 상자 정의
     notice_box = st.empty()
 
     user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
@@ -211,20 +213,16 @@ if st.session_state.gacha_step == "idle":
         if st.session_state.inputs:
             user_val = int("".join(map(str, st.session_state.inputs)))
             
-            # 💡 [정답 판단 로직 최적화]
             if user_val == st.session_state.target_answer:
                 reward = random.randint(8, 13)
                 st.session_state.gold += reward
                 st.session_state.game_score += 1
                 
-                # 1. 화면에 정답 성공 안내를 즉시 출력합니다.
                 notice_box.success(f"🎉 정답입니다! 마법 나무가 +{reward}G 보상을 떨어뜨렸습니다!")
                 force_file_save()
                 
-                # 2. 학생이 정답을 확인할 수 있도록 1.5초간 화면을 일시 정지합니다.
                 time.sleep(1.5)
                 
-                # 3. 다음 문제를 생성하고 화면을 리프레시합니다.
                 next_question()
                 st.rerun()
             else:
