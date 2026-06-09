@@ -81,7 +81,7 @@ st.markdown("""
     
     button[kind="primary"] {
         display: block !important; width: 100% !important; padding: 25px 0 !important;
-        font-size: 3rem !important; font-weight: bold !important; border-radius: 20px !important;
+        font-size: 2.2rem !important; font-weight: bold !important; border-radius: 20px !important;
         background: linear-gradient(90deg, #FFF9C6 0%, #BDF6F6 100%) !important;
         color: #2D2D2D !important; border: 4px solid #FFD93D !important;
         box-shadow: 0 8px 0 #FFD93D55 !important; transition: 0.1s all ease !important; height: auto !important;
