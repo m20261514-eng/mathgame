@@ -105,7 +105,7 @@ st.markdown("""
     
     /* 🛠️ 로그인 박스 테두리 및 그림자 제거 완료 */
     .login-box {
-        background: white; padding: 30px; border-radius: 20px;
+        background: #FFFDF0; padding: 30px; border-radius: 20px;
         margin-top: 50px; text-align: center;
     }
     </style>
