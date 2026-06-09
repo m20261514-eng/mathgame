@@ -57,7 +57,22 @@ st.markdown("""
     .stApp { background-color: #FFFDF0; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     .quiz-box { background: white; padding: 25px; border-radius: 25px; text-align: center; font-size: 42px; font-weight: bold; border: 5px solid #FFD93D; box-shadow: 0px 8px 0px #FFD93D55; margin-bottom: 25px; }
-    .hint-box { color: #FF4B4B !important; font-size: 32px !important; font-weight: bold; text-align: center; background-color: #FFEBEB; padding: 15px; border-radius: 15px; border: 3px dashed #FF4B4B; }
+    
+    /* 🚨 강렬하고 선명한 빨간색 테두리와 글씨의 힌트 박스 */
+    .hint-box { 
+        color: #FF4B4B !important; 
+        font-size: 36px !important; 
+        font-weight: bold; 
+        text-align: center; 
+        background-color: #FFEBEB; 
+        padding: 20px; 
+        border-radius: 20px; 
+        border: 4px dashed #FF4B4B;
+        box-shadow: 0px 6px 0px #FF4B4B22;
+        margin-top: 15px;
+        margin-bottom: 25px;
+    }
+    
     @keyframes vibrate { 0% { transform: translate(0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(-5px, -5px); } 60% { transform: translate(5px, 5px); } 80% { transform: translate(5px, -5px); } 100% { transform: translate(0); } }
     .egg-shaking { font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }
     .reveal-card { background: white; border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FFD93D; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px 0; }
@@ -75,21 +90,23 @@ st.markdown("""
         height: 68px !important; 
         width: 100% !important; 
         border: none !important;
-        
-        /* 입체감을 살리는 찐한 노란색 하단 테두리 그림자 */
         box-shadow: 0px 6px 0px #D6B21E !important; 
         transition: all 0.05s ease-in-out !important;
     }
-    
-    /* 버튼 위에 마우스를 올렸을 때 */
-    div[data-testid="stButton"] button:hover {
-        background-color: #FFE169 !important;
-    }
-
-    /* 💥 버튼을 터치/클릭하여 꾹 눌렀을 때 도각 하고 내려앉는 모션 */
+    div[data-testid="stButton"] button:hover { background-color: #FFE169 !important; }
     div[data-testid="stButton"] button:active {
         transform: translateY(4px) !important;
         box-shadow: 0px 2px 0px #D6B21E !important;
+    }
+
+    /* 🔒 잠금(비활성화) 상태일 때도 노란색 예쁜 형태는 유지되도록 보정 */
+    div[data-testid="stButton"] button:disabled {
+        background-color: #FFD93D !important;
+        color: #222222 !important;
+        box-shadow: 0px 6px 0px #D6B21E !important;
+        transform: none !important;
+        cursor: not-allowed !important;
+        opacity: 0.85 !important;
     }
 
     /* 우측 상단 '로비로' 가는 버튼 전용 튕김방지 숏 디자인 */
@@ -137,30 +154,44 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🥚 [신비의 알뽑기 상점]", expanded=False):
         st.button("🔮 알뽑기 시작!", on_click=start_gacha, use_container_width=True)
     
-    p_ans = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
+    # 🎨 힌트 상태일 때 퀴즈 박스 안의 텍스트가 빨간색 ? 로 표현되도록 연출
+    if st.session_state.status == "hint":
+        p_ans = "<span style='color: #FF4B4B;'> ? </span>"
+    else:
+        p_ans = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
+        
     st.markdown(f"<div class='quiz-box'>{st.session_state.dividend} ÷ {st.session_state.divisor} = [ {p_ans} ]</div>", unsafe_allow_html=True)
 
+    # 🔒 힌트 대기 상태라면 학생들이 키보드를 더 누르지 못하도록 물리적으로 잠금 처리
+    is_keyboard_locked = (st.session_state.status == "hint")
+
+    # ⌨️ 숫자 키패드 생성 (상시 고정)
+    keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    for row in keypad:
+        cols = st.columns(3)
+        for i, val in enumerate(row):
+            if cols[i].button(str(val), key=f"key_{val}", use_container_width=True, disabled=is_keyboard_locked):
+                if len(st.session_state.inputs) < 1 and st.session_state.status == "playing":
+                    st.session_state.inputs.append(val)
+                    st.session_state.is_answered = True
+                    st.rerun()
+        
+    if st.button("⌫ 지우기", key="del_btn", use_container_width=True, disabled=is_keyboard_locked):
+        if len(st.session_state.inputs) > 0 and st.session_state.status == "playing": 
+            st.session_state.inputs.pop()
+        st.rerun()
+
+    # 🛑 [틀렸을 때 연출 구역] 붉은색 곱셈식 힌트 박스를 키보드 밑에 띄우고 2.5초 대기 후 원상복구
     if st.session_state.status == "hint":
-        st.markdown(f"<div class='hint-box'>💡 힌트: {st.session_state.divisor} × {st.session_state.correct_answer} = {st.session_state.dividend}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='hint-box'>💡 힌트 곱셈식: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
         time.sleep(2.5)
         st.session_state.inputs = []
         st.session_state.status = "playing"
         st.session_state.is_answered = False
         st.rerun()
 
-    if st.session_state.status == "playing":
-        keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        for row in keypad:
-            cols = st.columns(3)
-            for i, val in enumerate(row):
-                cols[i].button(str(val), key=f"key_{val}", use_container_width=True, on_click=lambda v=val: st.session_state.inputs.append(v) or setattr(st.session_state, 'is_answered', True))
-        
-    if st.button("⌫ 지우기", key="del_btn", use_container_width=True):
-            if len(st.session_state.inputs) > 0: 
-                st.session_state.inputs.pop()
-            st.rerun()
-
-    if len(st.session_state.inputs) == 1 and st.session_state.status == "playing":
+    # 🟢 [맞았을 때 연출 구역] 
+    if len(st.session_state.inputs) == 1 and st.session_state.status == "playing" and st.session_state.is_answered:
         time.sleep(0.4)
         if st.session_state.inputs[0] == st.session_state.correct_answer:
             reward = random.randint(8, 13)
