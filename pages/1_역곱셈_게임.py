@@ -62,15 +62,15 @@ st.markdown("""
     .stApp { background-color: #FFFDF0; color: #111111 !important; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     
-    /* 📱 [모바일 타이틀 크기 최적화 및 말줄임 방지] */
+    /* 📱 [모바일 타이틀 글자 크기 미세 조정 및 자름 방지] */
     .game-title {
-        font-size: 6vw; /* 기존 7.5vw에서 6vw로 소폭 축소하여 공간 확보 */
+        font-size: 5.2vw; /* 6vw에서 5.2vw로 조금 더 줄여 글자가 온전히 다 나오게 함 */
         font-weight: bold;
         color: #111111;
         margin: 0;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible !important; /* 말줄임 생기지 않고 무조건 다 보이게 강제 */
+        text-overflow: clip !important;
     }
     @media (min-width: 600px) {
         .game-title {
@@ -122,18 +122,31 @@ st.markdown("""
         transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
     }
 
-    /* 🏠 상단 네비바 버튼 전용 및 모바일 여백 고정 */
+    /* 🏠 상단 네비바 PC 기본 스타일 */
     .lobby-btn button { 
-        background-color: #1E293B !important; color: #FFFFFF !important; height: 42px !important; 
-        font-size: 15px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
-        padding: 0px 5px !important; /* 버튼 내부 패딩을 줄여 좁은 폰에서도 축소 수용 */
+        background-color: #1E293B !important; color: #FFFFFF !important; height: 45px !important; 
+        font-size: 17px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
     }
     .lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #0F172A !important; }
+
+    /* 📱 [모바일 핸드폰 전용: 로비로 버튼 크기 축소 패치] */
+    @media (max-width: 600px) {
+        .lobby-btn button {
+            height: 36px !important;       /* 버튼 높이를 더 작게 슬림화 */
+            font-size: 13px !important;    /* 글씨 크기를 콤팩트하게 줄임 */
+            padding: 0px 4px !important;   /* 좌우 여백을 줄여 여유 공간 마련 */
+            box-shadow: 0px 3px 0px #0F172A !important;
+        }
+        .lobby-btn button:active { 
+            transform: translateY(2px) !important; 
+            box-shadow: 0px 1px 0px #0F172A !important; 
+        }
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 🛠️ 상단 배치 칼럼의 비율을 [3.2, 1]에서 모바일 유연성을 위해 조정하고 여백을 강제 제어합니다.
-cols_nav = st.columns([2.8, 1.2])
+# 레이아웃 비율 조정으로 글자가 들어설 가로폭을 더 넓게 보장
+cols_nav = st.columns([2.9, 1.1])
 with cols_nav[0]: 
     st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>⚔️ 역곱셈 게임</h2></div>", unsafe_allow_html=True)
 with cols_nav[1]:
@@ -190,7 +203,7 @@ if st.session_state.gacha_step == "idle":
     # ⌨️ [계산기 배열 구조 패치]
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
-        pad_cols = st.columns(3)  # 무조건 모바일에서도 깨지지 않고 3칸 유지
+        pad_cols = st.columns(3)
         for i, num in enumerate(row):
             if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
                 if len(st.session_state.inputs) < 2:
