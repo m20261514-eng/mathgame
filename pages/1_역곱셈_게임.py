@@ -62,17 +62,19 @@ st.markdown("""
     .stApp { background-color: #FFFDF0; color: #111111 !important; }
     [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #FFFDF0; }
     
-    /* 📱 [모바일 대응 반응형 타이틀 패치] */
+    /* 📱 [모바일 타이틀 크기 최적화 및 말줄임 방지] */
     .game-title {
-        font-size: 7.5vw; /* 화면 폭에 맞춰 글자 크기 축소 */
+        font-size: 6vw; /* 기존 7.5vw에서 6vw로 소폭 축소하여 공간 확보 */
         font-weight: bold;
         color: #111111;
         margin: 0;
-        white-space: nowrap; /* 자동 줄바꿈 원천 차단 */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     @media (min-width: 600px) {
         .game-title {
-            font-size: 2.3rem !important; /* PC에서는 적당한 고정 크기 유지 */
+            font-size: 2.1rem !important;
         }
     }
 
@@ -120,19 +122,20 @@ st.markdown("""
         transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
     }
 
-    /* 🏠 상단 네비바 버튼 전용 */
+    /* 🏠 상단 네비바 버튼 전용 및 모바일 여백 고정 */
     .lobby-btn button { 
-        background-color: #1E293B !important; color: #FFFFFF !important; height: 45px !important; 
-        font-size: 18px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
+        background-color: #1E293B !important; color: #FFFFFF !important; height: 42px !important; 
+        font-size: 15px !important; box-shadow: 0px 4px 0px #0F172A !important; font-weight: bold !important;
+        padding: 0px 5px !important; /* 버튼 내부 패딩을 줄여 좁은 폰에서도 축소 수용 */
     }
     .lobby-btn button:active { transform: translateY(3px) !important; box-shadow: 0px 1px 0px #0F172A !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# 🛠️ 기존 st.title 대신 반응형 스타일 텍스트 클래스를 적용했습니다.
-cols_nav = st.columns([3, 1])
+# 🛠️ 상단 배치 칼럼의 비율을 [3.2, 1]에서 모바일 유연성을 위해 조정하고 여백을 강제 제어합니다.
+cols_nav = st.columns([2.8, 1.2])
 with cols_nav[0]: 
-    st.markdown("<h2 class='game-title'>⚔️ 역곱셈 게임</h2>", unsafe_allow_html=True)
+    st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>⚔️ 역곱셈 게임</h2></div>", unsafe_allow_html=True)
 with cols_nav[1]:
     st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
     if st.button("🏠 로비로", use_container_width=True):
