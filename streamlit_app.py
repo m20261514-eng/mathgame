@@ -127,18 +127,7 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-    /* 🛠️ [로그인 박스 모바일 가독성 패치] */
-    /* 기존 background: white 제거 -> 전체 배경과 일치시킴으로써 흰색 사각형 현상 완전 제거 */
-    .login-box {
-        background: #FFFDF0 !important; 
-        padding: 25px 15px; 
-        border-radius: 20px;
-        border: 3px dashed #FFD93D; /* 밋밋하지 않게 노란색 귀여운 점선 가이드 추가 */
-        margin-top: 25px; 
-        text-align: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
+, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>🥚수학 게임 대모험🎲</div>", unsafe_allow_html=True)
 
