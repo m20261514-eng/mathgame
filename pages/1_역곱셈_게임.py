@@ -113,6 +113,13 @@ if st.session_state.gacha_step == "idle":
         st.session_state.is_answered = False
         st.rerun()
 
+    # [수정 부분 1] 정답을 맞혔을 때의 화면 연출 및 대기 처리 분리
+    if st.session_state.status == "correct":
+        st.success(f"🎉 정답! +{st.session_state.last_reward}G 획득!")
+        time.sleep(1.5)  # 축하 메시지를 보여주는 지연 시간 (이 동안 패드는 숨겨짐)
+        next_question()
+        st.rerun()
+
     if st.session_state.status == "playing":
         key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         for row in key_matrix:
@@ -129,17 +136,19 @@ if st.session_state.gacha_step == "idle":
                 st.session_state.inputs.pop()
             st.rerun()
 
+    # [수정 부분 2] 입력 완료 시 검증 로직 변경 (중복 클릭 원천 차단)
     if len(st.session_state.inputs) == 2 and st.session_state.status == "playing" and st.session_state.is_answered:
-        time.sleep(0.4)
         u1, u2 = st.session_state.inputs
         if u1 * u2 == st.session_state.target_product:
             reward = random.randint(8, 13)
-            st.success(f"🎉 정답! +{reward}G 획득!")
-            st.session_state.game_score += 1
+            
+            # 즉시 점수와 골드를 지급하고 상태를 'correct'로 바꾸어 패드를 숨깁니다.
             st.session_state.gold += reward
+            st.session_state.game_score += 1
+            st.session_state.last_reward = reward  # 화면 표시용 보상 금액 저장
+            st.session_state.status = "correct"
+            
             force_file_save()
-            time.sleep(1.2)
-            next_question()
             st.rerun()
         else:
             st.session_state.status = "hint"
