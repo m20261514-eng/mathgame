@@ -3,11 +3,11 @@ import random
 import time
 import json
 import base64
-import os  # 🛠️ 경로 치트키를 위한 라이브러리 추가
+import os
 
 st.set_page_config(page_title="마법의 숲 곱셈 퀘스트", page_icon="🌿", layout="centered")
 
-# 🛠️ [무조건 성공하는 경로 찾기] 현재 이 파이썬 파일이 있는 위치를 기준으로 이미지를 찾습니다.
+# 🛠️ 현재 파이썬 파일과 '같은 폴더'에 있는 이미지를 강제로 연결합니다.
 current_dir = os.path.dirname(__file__)
 IMAGE_PATH = os.path.join(current_dir, "multiple_background.png")
 
@@ -77,23 +77,29 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- 🌲 PNG 포맷 반영 및 투명화 CSS 🌲 ---
+# --- 🌲 [초강력 수정] HTML 직접 삽입 및 무조건 투명화 CSS 🌲 ---
 background_html = f"""
+<div class="custom-magic-bg"></div>
+
 <style>
-/* 1. PNG 포맷에 맞게 data:image/png로 수정 완료 */
-[data-testid="stAppViewContainer"]::before {{
-    content: "";
+/* 1. 배경화면 전용 완전 고정 레이어 (블러 + 어둡게) */
+.custom-magic-bg {{
     position: fixed;
-    top: -5%; left: -5%; width: 110%; height: 110%;
-    background-image: url("data:image/png;base64,{img_base64}");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-    filter: blur(6px) brightness(0.5); /* 블러 강도 및 밝기 */
-    z-index: -2;
+    top: -10px; left: -10px; 
+    width: calc(100vw + 20px); 
+    height: calc(100vh + 20px);
+    background-image: url("data:image/png;base64,{img_base64}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    filter: blur(6px) brightness(0.5); 
+    z-index: -3; /* 모든 Streamlit 요소보다 아래에 배치 */
+    pointer-events: none;
 }}
 
-/* 2. 배경 가림막 레이어 완전 제거 */
+/* 2. Streamlit의 모든 하얀색 판때기들을 모조리 투명하게 뚫어버림 */
+.stApp, 
+section.main,
 [data-testid="stAppViewContainer"], 
 [data-testid="stHeader"], 
 [data-testid="stMainViewContainer"], 
@@ -203,8 +209,9 @@ div[data-testid="stButton"] button:disabled {{
 </div>
 """
 
+# 🛠️ 만약 컴퓨터가 이미지를 아예 못 읽으면 상단에 명확하게 빨간 에러창을 띄워주는 안전장치
 if not img_base64:
-    st.error("⚠️ 배경 이미지 파일을 읽지 못했습니다. 'pages' 폴더 안에 'multiple_background.png' 파일이 있는지 다시 한 번 확인해 주세요!")
+    st.error("🚨 [파일 인식 실패] 'pages' 폴더 안에 'multiple_background.png' 파일이 없는 것 같습니다. 철자가 완벽히 똑같은지 다시 확인해 주세요!")
 
 st.markdown(background_html, unsafe_allow_html=True)
 
