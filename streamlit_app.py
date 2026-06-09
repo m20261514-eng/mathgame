@@ -124,14 +124,6 @@ st.markdown("""
     }
     .animal-emoji { font-size: 2.2rem; display: block; margin-bottom: 5px; }
     
-    .login-box {
-        background: #FFFDF0 !important; 
-        padding: 25px 15px; 
-        border-radius: 20px;
-        border: 3px dashed #FFD93D;
-        margin-top: 25px; 
-        text-align: center;
-    }
 
     /* ⌨️ [모바일 핀번호 입력창 색상 강제 회색 고정 패치] */
     div[data-testid="stTextInput"] input {
