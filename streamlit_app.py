@@ -79,9 +79,9 @@ st.markdown("""
     }
     .guide-text { color: #156580 !important; font-weight: bold; text-align: center; font-size: 1.2rem; margin-bottom: 30px;}
     
-    /* 🛠️ [해결책] 어떤 스트림릿 버전이든 강제로 버튼 글자 크기를 35px로 키우는 울트라 핵 */
+    /* 🛠️ [해결책] 어떤 스트림릿 버전이든 강제로 버튼 글자 크기를 25px로 키우는 울트라 핵 */
     div[data-testid="stButton"] button p {
-        font-size: 35px !important;
+        font-size: 25px !important;
         font-weight: bold !important;
     }
     
