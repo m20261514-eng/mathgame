@@ -310,7 +310,7 @@ else:
 
     st.write("---")
 
-    st.markdown("### 🪐 나의 우주 신비 도감")
+    st.markdown("### 🪐 나의 차원 신비 도감")
     st.write(f"📊 **전체 차원 유물 아카이브 수집률:** {len(st.session_state.my_collection)} / {len(all_animals)} 개")
 
     # 도감 탭 분할 구성
