@@ -104,16 +104,7 @@ div[data-style="stBlock"],
     box-shadow: none !important;
 }}
 
-/* 🚀 [공백 제거 패치] 타이틀과 로그인창 사이의 빈 공간 원천 차단 */
-div[data-testid="stVerticalBlock"] {{
-    gap: 0rem !important;
-}}
-div[data-testid="stVerticalBlock"] > div {{
-    padding-bottom: 0px !important;
-    margin-bottom: 0px !important;
-}}
-
-/* 1. 배경화면 고정 레이어 (복구 상태 유지) */
+/* 1. 배경화면 고정 레이어 */
 .custom-lobby-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -171,7 +162,7 @@ section.main,
     font-weight: bold; 
     color: #FFFFFF !important; 
     text-align: center;
-    margin-bottom: 15px; 
+    margin-bottom: 25px; 
     margin-top: 10px; 
     letter-spacing: 2px;
     white-space: nowrap; 
@@ -193,17 +184,13 @@ section.main,
 .guide-text br {{ display: none; }}
 @media (max-width: 600px) {{ .guide-text br {{ display: inline !important; }} }}
 
-/* 🔑 로그인 박스 (독립적인 실선 테두리 제공) */
-.login-box {{
-    background: rgba(15, 23, 42, 0.85) !important;
-    padding: 30px;
-    border-radius: 25px;
-    border: 2px solid #475569 !important;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
-    margin-top: 0px !important;
-}}
-.login-box h3, .login-box p, div[data-testid="stMarkdownContainer"] p {{
-    color: #F8FAFC !important;
+/* 🔑 [박스 제거 완화] 로그인 화면 배경 박스 테두리 및 그림자 완전 제거 */
+.login-box-clean {{
+    background: transparent !important;
+    padding: 10px 0px;
+    border: none !important;
+    box-shadow: none !important;
+    margin-top: 10px;
 }}
 
 /* 🧭 게임 입장 대형 네온 버튼 */
@@ -263,12 +250,9 @@ st.markdown(background_html, unsafe_allow_html=True)
 
 # --- 🔐 로그인 화면 분기 ---
 if not st.session_state.logged_in:
-    # 💡 타이틀과 로그인 박스 시작 태그를 하나의 markdown으로 결합하여 렌더링 틈새 공백 제거
-    login_start_html = """
-    <div class='main-title'>🌌 수학 차원 대모험 🧭</div>
-    <div class='login-box'>
-    """
-    st.markdown(login_start_html, unsafe_allow_html=True)
+    # 테두리 상자를 투명화(login-box-clean) 처리하여 글자만 나오게 수정
+    st.markdown("<div class='main-title'>🌌 수학 차원 대모험 🧭</div>", unsafe_allow_html=True)
+    st.markdown("<div class='login-box-clean'>", unsafe_allow_html=True)
     st.subheader("🔑 새벽의 빛을 따라온 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 새로운 차원의 문을 열어보세요!")
     
@@ -290,7 +274,7 @@ if not st.session_state.logged_in:
 
 # --- 🏠 로그인 성공 시 게임 로비 로드 ---
 else:
-    # 로그인 성공 시 렌더링될 메인 타이틀 독립 출력
+    # 메인 화면의 타이틀과 원래 줄 간격 레이아웃 복구
     st.markdown("<div class='main-title'>🌌 수학 차원 대모험 🧭</div>", unsafe_allow_html=True)
     
     col_user, col_logout = st.columns([2, 1])
