@@ -45,7 +45,7 @@ def next_question():
     if "last_reward" in st.session_state:
         del st.session_state.last_reward
 
-# 🛠️ [에러 해결] 세션 상태 초기화 유틸리티 (하나씩 개별 검사하여 빈틈없이 생성)
+# 세션 상태 초기화 유틸리티
 if "game_score" not in st.session_state: st.session_state.game_score = 0
 if "inputs" not in st.session_state: st.session_state.inputs = []
 if "status" not in st.session_state: st.session_state.status = "playing"
@@ -82,12 +82,12 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🔮")
 
-# --- 🌊 신비한 바다 테마 CSS ---
+# --- 🌊 신비한 바다 테마 CSS (숲 곱셈 게임과 규격 통일) ---
 background_html = f"""
 <div class="custom-inverse-bg"></div>
 
 <style>
-/* 1. 배경화면 고정 레이어 (은은하게 어둡고 블러) */
+/* 1. 배경화면 고정 레이어 */
 .custom-inverse-bg {{
     position: fixed;
     top: -10px; left: -10px; 
@@ -134,53 +134,60 @@ section.main,
     100% {{ transform: translateY(-100vh); opacity: 0.5; }}
 }}
 
-/* 컴포넌트 스타일 */
+/* 타이틀 디자인 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
 @media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
 [data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
 [data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
+/* 🧩 문제 상자 디자인 */
 .quiz-box {{ 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #03045E !important; 
     border: 5px solid #00B4D8; box-shadow: 0px 8px 15px rgba(0,0,0,0.4); margin-bottom: 30px; 
 }}
+
+/* 📊 대시보드 */
 .dashboard {{ 
     background: rgba(224, 251, 252, 0.9); padding: 15px; border-radius: 20px; border: 3px solid #0077B6; 
     font-size: 22px; font-weight: bold; color: #03045E !important; display: flex; justify-content: space-between;
     box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
 }}
 
+/* 뽑기 연출 효과 */
 @keyframes vibrate {{ 0% {{ transform: translate(0); }} 20% {{ transform: translate(-5px, 5px); }} 40% {{ transform: translate(-5px, -5px); }} 60% {{ transform: translate(5px, 5px); }} 80% {{ transform: translate(-5px, -5px); }} 100% {{ transform: translate(0); }} }}
 .pearl-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }}
 .reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #00B4D8; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
 .animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
 .animal-name {{ font-size: 32px; font-weight: bold; color: #03045E !important; }}
 
+/* 🌿 [수정] 키패드 버튼 디자인 및 크기 (곱셈 게임과 완벽 통일: 28px) */
 div[data-testid="stButton"] button {{ 
-    font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
+    font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #00B4D8 !important; color: #FFFFFF !important; height: 68px !important; 
-    width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #0077B6 !important; 
+    width: 100% !important; border: none !important; box-shadow: 0px 5px 0px #0077B6 !important; 
     transition: all 0.05s ease-in-out !important;
 }}
-div[data-testid="stButton"] button:hover {{ background-color: #90E0EF !important; color: #03045E !important; }}
-div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 2px 0px #0077B6 !important; }}
+div[data-testid="stButton"] button p {{
+    color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important;
+}}
+div[data-testid="stButton"] button:hover {{ background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 5px 0px #00B4D8 !important; }}
+div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 1px 0px #0077B6 !important; }}
 div[data-testid="stButton"] button:disabled {{
-    background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 6px 0px #0077B6 !important;
+    background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 5px 0px #00B4D8 !important;
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
 }}
 
+/* 🏠 [수정] 상단 로비 버튼 (곱셈 게임 스타일 규격으로 통일) */
 .lobby-btn button {{ 
-    background-color: rgba(3, 4, 94, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
-    font-size: 17px !important; box-shadow: 0px 4px 0px #000814 !important; font-weight: bold !important;
+    background-color: rgba(3, 4, 94, 0.85) !important; color: #FFFFFF !important; height: 45px !important; 
+    font-size: 16px !important; box-shadow: 0px 4px 0px #000814 !important; font-weight: bold !important;
 }}
+.lobby-btn button p {{ font-size: 16px !important; font-weight: bold !important; color: #FFFFFF !important; }}
+.lobby-btn button:hover {{ background-color: #0077B6 !important; color: #FFFFFF !important; }}
 .lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #000814 !important; }}
 
-@media (max-width: 600px) {{
-    .lobby-btn button {{ height: 36px !important; font-size: 13px !important; padding: 0px 4px !important; box-shadow: 0px 3px 0px #000814 !important; }}
-    .lobby-btn button:active {{ transform: translateY(2px) !important; box-shadow: 0px 1px 0px #000814 !important; }}
-}}
 </style>
 
 <div class="magic-particles-bg">
@@ -193,7 +200,7 @@ if not img_base64:
 
 st.markdown(background_html, unsafe_allow_html=True)
 
-# 上단 레이아웃 네비바
+# 상단 레이아웃 네비바
 cols_nav = st.columns([2.9, 1.1])
 with cols_nav[0]: 
     st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>🔱 신비한 바다 역곱셈</h2></div>", unsafe_allow_html=True)
@@ -268,8 +275,11 @@ if st.session_state.gacha_step == "idle":
             st.session_state.inputs.pop()
         st.rerun()
 
+    # 정답 메시지 출력 상자 위치
+    notice_box = st.empty()
+
     if "last_reward" in st.session_state:
-        st.success(f"💙 정답! 바다의 축복으로 +{st.session_state.last_reward}G 획득!")
+        notice_box.success(f"💙 정답! 바다의 축복으로 +{st.session_state.last_reward}G 획득!")
         time.sleep(1.5)
         next_question()
         st.rerun()
