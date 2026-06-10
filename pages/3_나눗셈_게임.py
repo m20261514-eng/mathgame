@@ -66,7 +66,7 @@ animals_data = {
     "전설": ["👽 초록 외계인","🐰 달토끼","🧬 돌연변이 우주 슬라임","🌟 반짝이는 초신성"]
 }
 
-# [수정] 빛나는 운석 뽑기 로직
+# 빛나는 운석 뽑기 로직
 def start_gacha():
     if st.session_state.gold >= 100:
         st.session_state.gold -= 100
@@ -82,7 +82,7 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🪐")
 
-# --- 🌌 우주 테마 CSS ---
+# --- 🌌 우주 테마 CSS (다른 퀘스트 맵과 완벽 규격 통일) ---
 background_html = f"""
 <div class="custom-space-bg"></div>
 
@@ -133,13 +133,14 @@ section.main,
     100% {{ transform: translateY(-100vh) rotate(360deg); opacity: 0.6; }}
 }}
 
-/* 컴포넌트 스타일 - 보라 & 분홍 테마 */
+/* 타이틀 디자인 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 8px rgba(255, 0, 127, 0.8); margin: 0; white-space: nowrap; }}
 @media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
 [data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
 [data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
+/* 🧩 문제 상자 디자인 */
 .quiz-box {{ 
     background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
     font-size: 42px; font-weight: bold; color: #2D004D !important; 
@@ -151,36 +152,43 @@ section.main,
     background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 12px; text-align: center; margin-top: 10px;
 }}
 
+/* 📊 대시보드 */
 .dashboard {{ 
     background: rgba(243, 230, 255, 0.92); padding: 15px; border-radius: 20px; border: 3px solid #FF007F; 
     font-size: 22px; font-weight: bold; color: #4A004A !important; display: flex; justify-content: space-between; margin-bottom: 20px; 
     box-shadow: 0px 4px 12px rgba(255, 0, 127, 0.2);
 }}
 
-/* [수정] 운석 충돌 진동 애니메이션 효과 */
+/* 운석 충돌 진동 애니메이션 효과 */
 @keyframes vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-5px, 5px) rotate(-3deg); }} 40% {{ transform: translate(-5px, -5px) rotate(3deg); }} 60% {{ transform: translate(5px, 5px) rotate(-3deg); }} 80% {{ transform: translate(5px, -5px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
 .meteor-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.12s linear infinite; }}
 .reveal-card {{ background: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FF007F; box-shadow: 0 10px 30px rgba(255, 0, 127, 0.3); margin: 20px 0; }}
 .animal-icon {{ font-size: 100px; }}
 .animal-name {{ font-size: 38px; font-weight: bold; color: #2D004D !important; }}
 
+/* 🚀 [수정] 키패드 및 하단 버튼 크기 매칭 (곱셈 게임 스타일: 28px) */
 div[data-testid="stButton"] button {{ 
-    font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
+    font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #8A2BE2 !important; color: #FFFFFF !important; height: 68px !important; 
-    width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #5A189A !important; 
+    width: 100% !important; border: none !important; box-shadow: 0px 5px 0px #5A189A !important; 
     transition: all 0.05s ease-in-out !important;
 }}
-div[data-testid="stButton"] button:hover {{ background-color: #FF007F !important; box-shadow: 0px 6px 0px #C1005B !important; }}
-div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 2px 0px #5A189A !important; }}
+div[data-testid="stButton"] button p {{
+    color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important;
+}}
+div[data-testid="stButton"] button:hover {{ background-color: #FF007F !important; box-shadow: 0px 5px 0px #C1005B !important; }}
+div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 1px 0px #5A189A !important; }}
 div[data-testid="stButton"] button:disabled {{
-    background-color: #8A2BE2 !important; color: #FFFFFF !important; box-shadow: 0px 6px 0px #5A189A !important;
+    background-color: #8A2BE2 !important; color: #FFFFFF !important; box-shadow: 0px 5px 0px #5A189A !important;
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
 }}
 
+/* 🏠 [수정] 상단 로비 버튼 (숲/바다 게임의 규격 높이 45px, 폰트 16px 스타일 통일) */
 .lobby-btn button {{ 
-    background-color: rgba(45, 0, 77, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
-    font-size: 18px !important; box-shadow: 0px 4px 0px #1A0033 !important; font-weight: bold !important;
+    background-color: rgba(45, 0, 77, 0.85) !important; color: #FFFFFF !important; height: 45px !important; 
+    font-size: 16px !important; box-shadow: 0px 4px 0px #1A0033 !important; font-weight: bold !important;
 }}
+.lobby-btn button p {{ font-size: 16px !important; font-weight: bold !important; color: #FFFFFF !important; }}
 .lobby-btn button:hover {{ background-color: #FF007F !important; box-shadow: 0px 4px 0px #C1005B !important; color: #FFFFFF !important; }}
 .lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #1A0033 !important; }}
 </style>
@@ -196,7 +204,7 @@ if not img_base64:
 st.markdown(background_html, unsafe_allow_html=True)
 
 # 상단 헤더 및 네비게이션 구조화
-cols_header = st.columns([3, 1])
+cols_header = st.columns([2.9, 1.1])
 with cols_header[0]: 
     st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>🪐 신비한 우주 나눗셈</h2></div>", unsafe_allow_html=True)
 with cols_header[1]:
@@ -208,9 +216,9 @@ with cols_header[1]:
 
 st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
 
-# [수정] 가챠(빛나는 운석 뽑기) 연출 단계 처리
+# 가챠(빛나는 운석 뽑기) 연출 단계 처리
 if st.session_state.gacha_step == "shaking":
-    st.markdown("<span class='meteor-shaking'>☄️</span>", unsafe_allow_html=True) # 운석 이모지로 변경 및 흔들기 연출
+    st.markdown("<span class='meteor-shaking'>☄️</span>", unsafe_allow_html=True)
     time.sleep(2.0)
     st.session_state.gacha_step = "revealed"
     st.rerun()
@@ -238,7 +246,6 @@ elif st.session_state.gacha_step == "revealed":
 
 # 기본 플레이 화면 UI 로드
 if st.session_state.gacha_step == "idle":
-    # [수정] 알뽑기 상점에서 '빛나는 운석 뽑기 상점'으로 변경
     with st.expander("☄️ [빛나는 운석 뽑기 상점]", expanded=False):
         st.button("🔮 운석 파편 분석 시작! (100 G)", on_click=start_gacha, use_container_width=True)
     
@@ -251,7 +258,7 @@ if st.session_state.gacha_step == "idle":
 
     is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
 
-    # ⌨️ 계산기 패드 3열 배열 배치
+    # 계산기 패드 배치
     keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in keypad:
         cols = st.columns(3)
@@ -274,9 +281,12 @@ if st.session_state.gacha_step == "idle":
     if st.session_state.status == "hint":
         st.markdown(f"<div class='hint-box'>💡 은하수 힌트: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
 
+    # 정답 알림 상자를 최하단에 띄우도록 설정
+    notice_box = st.empty()
+
     # 정답 시 보상 연출 및 대기 처리
     if "last_reward" in st.session_state:
-        st.success(f"🎆 우주의 축복! 정답입니다! +{st.session_state.last_reward}G 획득!")
+        notice_box.success(f"🎆 우주의 축복! 정답입니다! +{st.session_state.last_reward}G 획득!")
         time.sleep(1.2)
         make_division_question()
         st.rerun()
