@@ -77,7 +77,7 @@ def start_gacha():
     else:
         st.error("골드가 부족해요 🌿")
 
-# --- ✂️ [나뭇잎 삭제 완료] 깔끔한 배경 전용 CSS ✂️ ---
+# --- ✨ 파스텔 요정숲 테마 디자인 패치 리뉴얼 ---
 background_html = f"""
 <div class="custom-magic-bg"></div>
 
@@ -115,7 +115,7 @@ section.main,
     z-index: -1; pointer-events: none; overflow: hidden;
 }}
 
-/* 4. 은은한 금빛 반짝이 (정신 사납지 않게 아주 작고 조용하게 흩날림) */
+/* 4. 은은한 금빛 반짝이 */
 .gold-particles {{
     position: absolute; width: 3px; height: 3px; border-radius: 50%;
     background: transparent;
@@ -136,46 +136,63 @@ section.main,
     100% {{ transform: translateY(-100vh); opacity: 0.5; }}
 }}
 
-/* 기존 컴포넌트 디자인 유지 */
-.game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
+/* 타이틀 디자인 */
+.game-title {{ font-size: 5.2vw; font-weight: bold; color: #E8F5E9; text-shadow: 2px 2px 5px rgba(0,0,0,0.6); margin: 0; white-space: nowrap; }}
 @media (min-width: 600px) {{ .game-title {{ font-size: 2.1rem !important; }} }}
 
 [data-testid="stHorizontalBlock"] {{ display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }}
 [data-testid="stHorizontalBlock"] > div {{ flex: 1 1 0% !important; min-width: 0 !important; }}
 
+/* 🧩 문제 상자 디자인 (소프트 파스텔 크림) */
 .quiz-box {{ 
-    background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; text-align: center; 
-    font-size: 42px; font-weight: bold; color: #1B4332 !important; 
-    border: 5px solid #74C69D; box-shadow: 0px 8px 15px rgba(0,0,0,0.4); margin-bottom: 30px; 
-}}
-.dashboard {{ 
-    background: rgba(232, 245, 233, 0.9); padding: 15px; border-radius: 20px; border: 3px solid #2D6A4F; 
-    font-size: 22px; font-weight: bold; color: #1B4332 !important; display: flex; justify-content: space-between; 
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
+    background: rgba(244, 249, 246, 0.96); padding: 25px; border-radius: 25px; text-align: center; 
+    font-size: 42px; font-weight: bold; color: #2D4A3E !important; 
+    border: 4px solid #A3E4D7; box-shadow: 0px 8px 15px rgba(0,0,0,0.3); margin-bottom: 30px; 
 }}
 
+/* 📊 대시보드 (파스텔 세이지그린민트) */
+.dashboard {{ 
+    background: rgba(220, 239, 233, 0.85); padding: 15px; border-radius: 20px; border: 2.5px solid #74C69D; 
+    font-size: 22px; font-weight: bold; color: #1E3A2F !important; display: flex; justify-content: space-between; 
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.2); margin-bottom: 15px;
+}}
+
+/* 🌿 [핵심 변경] 키패드 및 상점 버튼 (살짝 밝고 화사한 파스텔 민트/세이지) */
 div[data-testid="stButton"] button {{ 
-    font-size: 32px !important; font-weight: bold !important; border-radius: 18px !important; 
-    background-color: #40916C !important; color: #FFFFFF !important; height: 68px !important; 
-    width: 100% !important; border: none !important; box-shadow: 0px 6px 0px #1B4332 !important; 
+    font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
+    background-color: #74C69D !important; color: #FFFFFF !important; height: 68px !important; 
+    width: 100% !important; border: none !important; box-shadow: 0px 5px 0px #40916C !important; 
     transition: all 0.05s ease-in-out !important;
 }}
-div[data-testid="stButton"] button:hover {{ background-color: #52B788 !important; }}
-div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 2px 0px #1B4332 !important; }}
+div[data-testid="stButton"] button p {{
+    color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important;
+}}
+div[data-testid="stButton"] button:hover {{ 
+    background-color: #95D5B2 !important; 
+    box-shadow: 0px 5px 0px #52B788 !important;
+}}
+div[data-testid="stButton"] button:active {{ 
+    transform: translateY(4px) !important; 
+    box-shadow: 0px 1px 0px #40916C !important; 
+}}
 div[data-testid="stButton"] button:disabled {{
-    background-color: #74C69D !important; color: #FFFFFF !important; box-shadow: 0px 6px 0px #40916C !important;
+    background-color: #B7E4C7 !important; color: #E8F5E9 !important; box-shadow: 0px 5px 0px #95D5B2 !important;
     transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
 }}
 
+/* 🏠 상단 로비 버튼 (차분하고 세련된 다운톤 민트) */
 .lobby-btn button {{ 
-    background-color: rgba(27, 67, 50, 0.9) !important; color: #FFFFFF !important; height: 45px !important; 
-    font-size: 17px !important; box-shadow: 0px 4px 0px #081C15 !important; font-weight: bold !important;
+    background-color: rgba(64, 145, 108, 0.85) !important; color: #FFFFFF !important; height: 45px !important; 
+    font-size: 16px !important; box-shadow: 0px 4px 0px #2D6A4F !important; font-weight: bold !important;
 }}
-.lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #081C15 !important; }}
+.lobby-btn button p {{ font-size: 16px !important; }}
+.lobby-btn button:hover {{ background-color: #52B788 !important; }}
+.lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #2D6A4F !important; }}
 
+/* 가챠 상자 애니메이션 효과 */
 @keyframes leaf-vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-4px, 4px) rotate(-3deg); }} 40% {{ transform: translate(-4px, -4px) rotate(3deg); }} 60% {{ transform: translate(4px, 4px) rotate(-3deg); }} 80% {{ transform: translate(-4px, -4px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
 .capsule-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: leaf-vibrate 0.14s linear infinite; }}
-.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #52B788; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
+.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #74C69D; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
 .animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
 .animal-name {{ font-size: 32px; font-weight: bold; color: #1B4332 !important; }}
 </style>
