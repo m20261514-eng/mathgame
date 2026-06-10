@@ -239,6 +239,13 @@ div[data-testid="stTextInput"] input {{
     -webkit-text-fill-color: #F8FAFC !important;
     border: 2px solid #475569 !important;
 }}
+
+/* ⚡ [추가 수정] 입력창의 라벨(설명 문구)을 흰색으로 고정하는 패치 */
+div[data-testid="stTextInput"] label,
+div[data-testid="stTextInput"] label p {{
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}}
 </style>
 """
 
