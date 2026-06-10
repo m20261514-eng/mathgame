@@ -42,6 +42,31 @@ def next_question():
     st.session_state.inputs = []
     st.session_state.status = "playing" 
 
+# 🎯 자동 정답 판별 함수 (새로 추가됨)
+def check_answer_auto():
+    if not st.session_state.inputs:
+        return
+        
+    user_val = int("".join(map(str, st.session_state.inputs)))
+    target_str = str(st.session_state.target_answer)
+    
+    # 정답일 경우
+    if user_val == st.session_state.target_answer:
+        reward = random.randint(8, 13)
+        st.session_state.gold += reward
+        st.session_state.game_score += 1
+        st.session_state.last_reward = reward
+        force_file_save()
+        
+        # 화면 멈춤 없이 부드럽게 토스트 알림 띄우기
+        st.toast(f"🎉 정답! 마법 나무가 +{reward}G를 줬어요! 🍃", icon="✨")
+        next_question()
+        
+    # 오답일 경우 (입력한 숫자의 길이가 정답 자리수와 같아졌을 때)
+    elif len(st.session_state.inputs) == len(target_str):
+        st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌", icon="🍂")
+        st.session_state.inputs = []
+
 # 세션 상태 초기화
 if "game_score" not in st.session_state: st.session_state.game_score = 0
 if "inputs" not in st.session_state: st.session_state.inputs = []
@@ -50,9 +75,7 @@ if "status" not in st.session_state: st.session_state.status = "playing"
 if "last_reward" not in st.session_state: st.session_state.last_reward = 0
 if "revealed_animal" not in st.session_state: st.session_state.revealed_animal = None
 if "factor1" not in st.session_state:
-    st.session_state.factor1 = random.randint(2, 9)
-    st.session_state.factor2 = random.randint(2, 9)
-    st.session_state.target_answer = st.session_state.factor1 * st.session_state.factor2
+    next_question()
 
 # 마법의 숲 동물 데이터 세팅
 animals_data = {
@@ -261,53 +284,27 @@ if st.session_state.gacha_step == "idle":
     # 문제 출제 상자 
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
 
-    # 정답을 맞힌 상태일 경우 키패드 잠금
-    is_locked = (st.session_state.status == "correct_waiting")
-
     # 1 ~ 9 키패드 
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_locked):
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
                 if len(st.session_state.inputs) < 2:
                     st.session_state.inputs.append(num)
+                    check_answer_auto() # 버튼 누름과 동시에 정답 판별
                     st.rerun()
 
+    # 마지막 줄 (확인 버튼 제거, 가운데 0, 우측 지우기)
     last_row_cols = st.columns(3)
     
-    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True, disabled=is_locked):
+    if last_row_cols[1].button("0", key="pad_0", use_container_width=True):
+        if len(st.session_state.inputs) < 2:
+            st.session_state.inputs.append(0)
+            check_answer_auto() # 버튼 누름과 동시에 정답 판별
+            st.rerun()
+            
+    if last_row_cols[2].button("⌫", key="pad_del", use_container_width=True):
         if len(st.session_state.inputs) > 0:
             st.session_state.inputs.pop()
             st.rerun()
-            
-    if last_row_cols[1].button("0", key="pad_0", use_container_width=True, disabled=is_locked):
-        if len(st.session_state.inputs) < 2:
-            st.session_state.inputs.append(0)
-            st.rerun()
-            
-    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True, disabled=is_locked):
-        if st.session_state.inputs:
-            user_val = int("".join(map(str, st.session_state.inputs)))
-            
-            if user_val == st.session_state.target_answer:
-                reward = random.randint(8, 13)
-                st.session_state.gold += reward
-                st.session_state.game_score += 1
-                st.session_state.last_reward = reward
-                st.session_state.status = "correct_waiting" 
-                force_file_save()
-                st.rerun() 
-            else:
-                st.session_state.inputs = []
-                st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
-                st.rerun()
-
-    # 정답 알림 상자를 키패드 아래(최하단)에 배치합니다.
-    notice_box = st.empty()
-    
-    if st.session_state.status == "correct_waiting":
-        notice_box.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
-        time.sleep(1.5)
-        next_question()
-        st.rerun()
