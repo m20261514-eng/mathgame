@@ -42,31 +42,6 @@ def next_question():
     st.session_state.inputs = []
     st.session_state.status = "playing" 
 
-# 🎯 자동 정답 판별 함수 (새로 추가됨)
-def check_answer_auto():
-    if not st.session_state.inputs:
-        return
-        
-    user_val = int("".join(map(str, st.session_state.inputs)))
-    target_str = str(st.session_state.target_answer)
-    
-    # 정답일 경우
-    if user_val == st.session_state.target_answer:
-        reward = random.randint(8, 13)
-        st.session_state.gold += reward
-        st.session_state.game_score += 1
-        st.session_state.last_reward = reward
-        force_file_save()
-        
-        # 화면 멈춤 없이 부드럽게 토스트 알림 띄우기
-        st.toast(f"🎉 정답! 마법 나무가 +{reward}G를 줬어요! 🍃", icon="✨")
-        next_question()
-        
-    # 오답일 경우 (입력한 숫자의 길이가 정답 자리수와 같아졌을 때)
-    elif len(st.session_state.inputs) == len(target_str):
-        st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌", icon="🍂")
-        st.session_state.inputs = []
-
 # 세션 상태 초기화
 if "game_score" not in st.session_state: st.session_state.game_score = 0
 if "inputs" not in st.session_state: st.session_state.inputs = []
@@ -284,7 +259,7 @@ if st.session_state.gacha_step == "idle":
     # 문제 출제 상자 
     st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
 
-    # 1 ~ 9 키패드 
+    # 1 ~ 9 키패드 (여기서는 숫자만 추가하고 바로 rerun)
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
@@ -292,19 +267,43 @@ if st.session_state.gacha_step == "idle":
             if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True):
                 if len(st.session_state.inputs) < 2:
                     st.session_state.inputs.append(num)
-                    check_answer_auto() # 버튼 누름과 동시에 정답 판별
                     st.rerun()
 
-    # 마지막 줄 (확인 버튼 제거, 가운데 0, 우측 지우기)
+    # 마지막 줄 (가운데 0, 우측 지우기)
     last_row_cols = st.columns(3)
     
     if last_row_cols[1].button("0", key="pad_0", use_container_width=True):
         if len(st.session_state.inputs) < 2:
             st.session_state.inputs.append(0)
-            check_answer_auto() # 버튼 누름과 동시에 정답 판별
             st.rerun()
             
     if last_row_cols[2].button("⌫", key="pad_del", use_container_width=True):
         if len(st.session_state.inputs) > 0:
             st.session_state.inputs.pop()
+            st.rerun()
+
+    # 🎯 정답 판별 및 매끄러운 화면 전환 로직
+    # 화면(키패드 포함)이 모두 렌더링 된 '이후'에 답을 판별합니다.
+    if st.session_state.inputs:
+        user_val = int("".join(map(str, st.session_state.inputs)))
+        target_str = str(st.session_state.target_answer)
+        
+        # 정답일 경우
+        if user_val == st.session_state.target_answer:
+            reward = random.randint(8, 13)
+            st.session_state.gold += reward
+            st.session_state.game_score += 1
+            st.session_state.last_reward = reward
+            force_file_save()
+            
+            st.toast(f"🎉 정답! 마법 나무가 +{reward}G를 줬어요! 🍃", icon="✨")
+            time.sleep(1.0) # 1초 동안 멈춰서 사용자가 완성된 숫자와 알림을 볼 수 있게 함
+            next_question()
+            st.rerun()
+            
+        # 오답일 경우 (입력한 숫자의 길이가 정답 자리수와 같아졌을 때)
+        elif len(st.session_state.inputs) == len(target_str):
+            st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌", icon="🍂")
+            time.sleep(0.6) # 오답인 숫자를 잠깐 보여주고 삭제
+            st.session_state.inputs = []
             st.rerun()
