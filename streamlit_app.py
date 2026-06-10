@@ -214,7 +214,7 @@ div[data-testid="stButton"] button {{
     color: #E2E8F0 !important; border: 3px solid #6366F1 !important;
     box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3) !important; 
     transition: 0.15s all ease !important; height: auto !important;
-}
+}}
 div[data-testid="stButton"] button p {{
     font-size: 18px !important; font-weight: bold !important; color: #FFFFFF !important;
 }}
