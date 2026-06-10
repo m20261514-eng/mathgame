@@ -41,9 +41,7 @@ def next_question():
     st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
     st.session_state.inputs = []
     st.session_state.status = "playing"
-    st.session_state.is_answered = False
-    if "last_reward" in st.session_state:
-        del st.session_state.last_reward
+    st.session_state.is_locked = False # 🔒 새 문제 시작 시 키보드 잠금 해제
 
 # 세션 상태 초기화 유틸리티
 if "game_score" not in st.session_state: st.session_state.game_score = 0
@@ -51,13 +49,12 @@ if "inputs" not in st.session_state: st.session_state.inputs = []
 if "status" not in st.session_state: st.session_state.status = "playing"
 if "gacha_step" not in st.session_state: st.session_state.gacha_step = "idle"
 if "revealed_animal" not in st.session_state: st.session_state.revealed_animal = None
-if "is_answered" not in st.session_state: st.session_state.is_answered = False
+if "is_locked" not in st.session_state: st.session_state.is_locked = False
+if "last_reward" not in st.session_state: st.session_state.last_reward = 0
 
 # 문제용 변수가 하나라도 없으면 통째로 새로 출제
 if "target_product" not in st.session_state or "factor1" not in st.session_state or "factor2" not in st.session_state:
-    st.session_state.factor1 = random.randint(2, 9)
-    st.session_state.factor2 = random.randint(2, 9)
-    st.session_state.target_product = st.session_state.factor1 * st.session_state.factor2
+    next_question()
 
 # 🦀 바다 & 자연 생물 데이터 세팅
 animals_data = {
@@ -82,57 +79,47 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🔮")
 
-# --- 🌊 신비한 바다 테마 CSS (숲 곱셈 게임과 규격 통일) ---
+# 🎯 키패드 버튼 클릭 콜백 함수
+def press_key(num):
+    if not st.session_state.is_locked and len(st.session_state.inputs) < 2:
+        st.session_state.inputs.append(num)
+
+def press_del():
+    if not st.session_state.is_locked:
+        if st.session_state.status == "hint":
+            st.session_state.inputs = []
+            st.session_state.status = "playing"
+        elif len(st.session_state.inputs) > 0:
+            st.session_state.inputs.pop()
+
+# --- 🌊 신비한 바다 테마 CSS ---
 background_html = f"""
 <div class="custom-inverse-bg"></div>
 
 <style>
 /* 1. 배경화면 고정 레이어 */
 .custom-inverse-bg {{
-    position: fixed;
-    top: -10px; left: -10px; 
-    width: calc(100vw + 20px); 
-    height: calc(100vh + 20px);
+    position: fixed; top: -10px; left: -10px; width: calc(100vw + 20px); height: calc(100vh + 20px);
     background-image: url("data:image/png;base64,{img_base64}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center center !important;
-    background-size: cover !important;
-    filter: blur(6px) brightness(0.5); 
-    z-index: -3; 
-    pointer-events: none;
+    background-repeat: no-repeat !important; background-position: center center !important;
+    background-size: cover !important; filter: blur(6px) brightness(0.5); 
+    z-index: -3; pointer-events: none;
 }}
 
-/* 2. Streamlit 기본 판때기 완벽 투명화 */
-.stApp, 
-section.main,
-[data-testid="stAppViewContainer"], 
-[data-testid="stHeader"], 
-[data-testid="stMainViewContainer"], 
-[data-testid="stMain"],
-[data-testid="stDecoration"] {{
-    background-color: transparent !important;
-    background: transparent !important;
+/* 2. Streamlit 기본 판때기 투명화 */
+.stApp, section.main, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stMainViewContainer"], [data-testid="stMain"], [data-testid="stDecoration"] {{
+    background-color: transparent !important; background: transparent !important;
 }}
 
 /* 3. 은은한 심해 물방울 반짝이 효과 */
-.magic-particles-bg {{
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: -1; pointer-events: none; overflow: hidden;
-}}
+.magic-particles-bg {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden; }}
 .blue-sparkles {{
-    position: absolute; width: 4px; height: 4px; border-radius: 50%;
-    background: transparent;
-    box-shadow: 
-        15vw 25vh rgba(255,255,255,0.6), 35vw 45vh rgba(144,224,239,0.5), 55vw 75vh rgba(255,255,255,0.6), 
-        75vw 15vh rgba(144,224,239,0.5), 85vw 55vh rgba(255,255,255,0.6), 25vw 85vh rgba(144,224,239,0.5);
-    animation: floatUp 18s linear infinite;
-    filter: blur(0.5px);
+    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: transparent;
+    box-shadow: 15vw 25vh rgba(255,255,255,0.6), 35vw 45vh rgba(144,224,239,0.5), 55vw 75vh rgba(255,255,255,0.6), 
+                75vw 15vh rgba(144,224,239,0.5), 85vw 55vh rgba(255,255,255,0.6), 25vw 85vh rgba(144,224,239,0.5);
+    animation: floatUp 18s linear infinite; filter: blur(0.5px);
 }}
-@keyframes floatUp {{
-    0% {{ transform: translateY(0); opacity: 0.5; }}
-    50% {{ opacity: 0.2; }}
-    100% {{ transform: translateY(-100vh); opacity: 0.5; }}
-}}
+@keyframes floatUp {{ 0% {{ transform: translateY(0); opacity: 0.5; }} 50% {{ opacity: 0.2; }} 100% {{ transform: translateY(-100vh); opacity: 0.5; }} }}
 
 /* 타이틀 디자인 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0; white-space: nowrap; }}
@@ -155,31 +142,24 @@ section.main,
     box-shadow: 0px 4px 10px rgba(0,0,0,0.3); margin-bottom: 15px;
 }}
 
-/* 뽑기 연출 효과 */
-@keyframes vibrate {{ 0% {{ transform: translate(0); }} 20% {{ transform: translate(-5px, 5px); }} 40% {{ transform: translate(-5px, -5px); }} 60% {{ transform: translate(5px, 5px); }} 80% {{ transform: translate(-5px, -5px); }} 100% {{ transform: translate(0); }} }}
-.pearl-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }}
-.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #00B4D8; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
-.animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
-.animal-name {{ font-size: 32px; font-weight: bold; color: #03045E !important; }}
-
-/* 🌿 [수정] 키패드 버튼 디자인 및 크기 (곱셈 게임과 완벽 통일: 28px) */
+/* 🌿 키패드 버튼 디자인 */
 div[data-testid="stButton"] button {{ 
     font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #00B4D8 !important; color: #FFFFFF !important; height: 68px !important; 
     width: 100% !important; border: none !important; box-shadow: 0px 5px 0px #0077B6 !important; 
     transition: all 0.05s ease-in-out !important;
 }}
-div[data-testid="stButton"] button p {{
-    color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important;
-}}
+div[data-testid="stButton"] button p {{ color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important; }}
 div[data-testid="stButton"] button:hover {{ background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 5px 0px #00B4D8 !important; }}
 div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 1px 0px #0077B6 !important; }}
+
+/* 🔒 잠긴 버튼(정답 후) 비활성화 디자인 */
 div[data-testid="stButton"] button:disabled {{
     background-color: #90E0EF !important; color: #03045E !important; box-shadow: 0px 5px 0px #00B4D8 !important;
-    transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
+    transform: none !important; cursor: not-allowed !important; opacity: 0.6 !important;
 }}
 
-/* 🏠 [수정] 상단 로비 버튼 (곱셈 게임 스타일 규격으로 통일) */
+/* 🏠 상단 로비 버튼 */
 .lobby-btn button {{ 
     background-color: rgba(3, 4, 94, 0.85) !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 16px !important; box-shadow: 0px 4px 0px #000814 !important; font-weight: bold !important;
@@ -187,6 +167,17 @@ div[data-testid="stButton"] button:disabled {{
 .lobby-btn button p {{ font-size: 16px !important; font-weight: bold !important; color: #FFFFFF !important; }}
 .lobby-btn button:hover {{ background-color: #0077B6 !important; color: #FFFFFF !important; }}
 .lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #000814 !important; }}
+
+/* 💬 새로 추가된 피드백 메시지 박스 (바다 테마 맞춤) */
+.feedback-success {{ background: rgba(204, 245, 255, 0.95); color: #005F73; padding: 15px; border-radius: 15px; text-align: center; font-size: 22px; font-weight: bold; border: 3px solid #0A9396; margin-top: 20px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }}
+.feedback-error {{ background: rgba(255, 227, 227, 0.95); color: #9B2226; padding: 15px; border-radius: 15px; text-align: center; font-size: 22px; font-weight: bold; border: 3px solid #E07A5F; margin-top: 20px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }}
+
+/* 뽑기 연출 효과 */
+@keyframes vibrate {{ 0% {{ transform: translate(0); }} 20% {{ transform: translate(-5px, 5px); }} 40% {{ transform: translate(-5px, -5px); }} 60% {{ transform: translate(5px, 5px); }} 80% {{ transform: translate(-5px, -5px); }} 100% {{ transform: translate(0); }} }}
+.pearl-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.15s linear infinite; }}
+.reveal-card {{ background: rgba(255,255,255,0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #00B4D8; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 20px 0; }}
+.animal-icon {{ font-size: 100px; margin-bottom: 10px; }}
+.animal-name {{ font-size: 32px; font-weight: bold; color: #03045E !important; }}
 
 </style>
 
@@ -233,11 +224,13 @@ elif st.session_state.gacha_step == "revealed":
     with col_confirm1:
         if st.button("확인", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            next_question()
             force_file_save()
             st.rerun()
     with col_confirm2:
         if st.button("도감 보기", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            next_question()
             force_file_save()
             st.switch_page("streamlit_app.py")
 
@@ -246,8 +239,31 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🔮 [진주 방울 뽑기 상점]", expanded=False):
         st.button("🔮 진주 방울 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
+    # 🎯 정답 판별 로직 (화면 그리기 전 검사)
+    feedback_msg = ""
+    feedback_type = ""
+
+    if len(st.session_state.inputs) == 2:
+        u1, u2 = st.session_state.inputs
+        if u1 * u2 == st.session_state.target_product:
+            if not st.session_state.is_locked: # 🔒 중복 획득 및 클릭 방지
+                reward = random.randint(8, 13)
+                st.session_state.gold += reward
+                st.session_state.game_score += 1
+                st.session_state.last_reward = reward
+                force_file_save()
+                st.session_state.is_locked = True
+            feedback_msg = f"💙 정답! 바다의 축복으로 +{st.session_state.last_reward}G 획득! 🌊"
+            feedback_type = "success"
+        else:
+            if not st.session_state.is_locked:
+                st.session_state.is_locked = True # 에러 메시지 출력 중 잠금
+            feedback_msg = "앗! 파도가 거세져요. 다시 생각해보세요! 🌪️"
+            feedback_type = "error"
+
+    # 문제 출제 상자 렌더링
     if st.session_state.status == "hint":
-        p1 = f"<span style='color: #E03131; font-weight: 900;'>{st.session_state.factor1}</span>"
+        p1 = f"<span style='color: #D62828; font-weight: 900;'>{st.session_state.factor1}</span>"
         p2 = str(st.session_state.inputs[1]) if len(st.session_state.inputs) >= 2 else " ? "
     else:
         p1 = str(st.session_state.inputs[0]) if len(st.session_state.inputs) >= 1 else " ? "
@@ -255,47 +271,32 @@ if st.session_state.gacha_step == "idle":
     
     st.markdown(f"<div class='quiz-box'>{st.session_state.target_product} = [ {p1} ] × [ {p2} ]</div>", unsafe_allow_html=True)
 
-    is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
-
+    # 1 ~ 9 키패드 렌더링
     key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in key_matrix:
         pad_cols = st.columns(3)
         for i, num in enumerate(row):
-            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_keyboard_locked):
-                if len(st.session_state.inputs) < 2:
-                    st.session_state.inputs.append(num)
-                    st.session_state.is_answered = True
-                    st.rerun()
+            pad_cols[i].button(str(num), key=f"pad_{num}", on_click=press_key, args=(num,), use_container_width=True, disabled=st.session_state.is_locked)
 
-    if st.button("⌫ 지우기", use_container_width=True, disabled=is_keyboard_locked):
-        if st.session_state.status == "hint":
-            st.session_state.inputs = []
-            st.session_state.status = "playing"
-        elif len(st.session_state.inputs) > 0:
-            st.session_state.inputs.pop()
-        st.rerun()
+    # 지우기 키패드
+    st.button("⌫ 지우기", use_container_width=True, on_click=press_del, disabled=st.session_state.is_locked)
 
-    # 정답 메시지 출력 상자 위치
-    notice_box = st.empty()
+    # 💬 피드백 박스 렌더링
+    if feedback_msg:
+        css_class = "feedback-success" if feedback_type == "success" else "feedback-error"
+        st.markdown(f"<div class='{css_class}'>{feedback_msg}</div>", unsafe_allow_html=True)
+    else:
+        st.markdown("<div style='height: 60px; margin-top: 20px;'></div>", unsafe_allow_html=True)
 
-    if "last_reward" in st.session_state:
-        notice_box.success(f"💙 정답! 바다의 축복으로 +{st.session_state.last_reward}G 획득!")
-        time.sleep(1.5)
+    # ⏳ 피드백 딜레이 후 화면 자동 전환
+    if feedback_type == "success":
+        time.sleep(1.2)
         next_question()
         st.rerun()
-
-    if len(st.session_state.inputs) == 2 and st.session_state.is_answered:
-        u1, u2 = st.session_state.inputs
-        if u1 * u2 == st.session_state.target_product:
-            reward = random.randint(8, 13)
-            st.session_state.gold += reward
-            st.session_state.game_score += 1
-            st.session_state.last_reward = reward
-            st.session_state.status = "correct_waiting"
-            force_file_save()
-            st.rerun()
-        else:
-            st.session_state.status = "hint"
-            st.session_state.inputs = [st.session_state.factor1]
-            st.session_state.is_answered = False
-            st.rerun()
+    elif feedback_type == "error":
+        time.sleep(0.8)
+        # 오답일 경우 첫 번째 힌트를 제공하며 다시 풀게 유도
+        st.session_state.status = "hint"
+        st.session_state.inputs = [st.session_state.factor1] 
+        st.session_state.is_locked = False
+        st.rerun()
