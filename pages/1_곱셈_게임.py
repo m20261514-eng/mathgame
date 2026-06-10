@@ -157,7 +157,7 @@ section.main,
     box-shadow: 0px 4px 10px rgba(0,0,0,0.2); margin-bottom: 15px;
 }}
 
-/* 🌿 [핵심 변경] 키패드 및 상점 버튼 (살짝 밝고 화사한 파스텔 민트/세이지) */
+/* 🌿 키패드 및 상점 버튼 (살짝 밝고 화사한 파스텔 민트/세이지) */
 div[data-testid="stButton"] button {{ 
     font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #74C69D !important; color: #FFFFFF !important; height: 68px !important; 
@@ -256,8 +256,12 @@ if st.session_state.gacha_step == "idle":
     with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
         st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
 
-    # 정답 알림 상자를 미리 자리만 잡아둡니다.
+    # 정답 알림 상자를 미리 상단에 배치합니다.
     notice_box = st.empty()
+    
+    # 만약 정답을 임시 대기중인 순간이라면 메시지를 먼저 박아 고정합니다.
+    if st.session_state.status == "correct_waiting":
+        notice_box.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
 
     user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
     
@@ -293,6 +297,7 @@ if st.session_state.gacha_step == "idle":
         if st.session_state.inputs:
             user_val = int("".join(map(str, st.session_state.inputs)))
             
+            # ✨ [정답 대기 로직 구조 수정 완료]
             if user_val == st.session_state.target_answer:
                 reward = random.randint(8, 13)
                 st.session_state.gold += reward
@@ -300,15 +305,16 @@ if st.session_state.gacha_step == "idle":
                 st.session_state.last_reward = reward
                 st.session_state.status = "correct_waiting" 
                 force_file_save()
+                
+                # 확인 단추를 누른 즉시 그 자리에서 강제 리렌더링 후 1.5초 대기하고 새문제 전환을 보장합니다.
                 st.rerun() 
             else:
                 st.session_state.inputs = []
                 st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
                 st.rerun()
 
-    # UI가 모두 그려진 후, 상태를 확인하여 1.5초 대기하고 새 문제로 넘깁니다.
+    # 🚀 [위치 수정] 화면을 한번 성공 메시지로 그려준 뒤, 안전하게 대기했다가 다음 문제로 청소이동
     if st.session_state.status == "correct_waiting":
-        notice_box.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
         time.sleep(1.5)
         next_question()
         st.rerun()
