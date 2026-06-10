@@ -203,4 +203,111 @@ div[data-testid="stButton"] button:disabled {{
 """
 
 if not img_base64:
-    st.error("🚨 [파일 인식 실패] 'pages' 폴더 안에 'multiple_background.png' 파일이 없는 것 같습니다. 철자가 완
+    st.error("🚨 [파일 인식 실패] 'pages' 폴더 안에 'multiple_background.png' 파일이 없는 것 같습니다. 철자가 완벽히 똑같은지 다시 확인해 주세요!")
+
+st.markdown(background_html, unsafe_allow_html=True)
+
+# 상단 비율 세팅 및 로비 연결
+cols_nav = st.columns([2.9, 1.1])
+with cols_nav[0]: 
+    st.markdown("<div style='padding-top: 5px;'><h2 class='game-title'>🌲 마법의 숲 곱셈 게임</h2></div>", unsafe_allow_html=True)
+with cols_nav[1]:
+    st.markdown("<div class='lobby-btn'>", unsafe_allow_html=True)
+    if st.button("🏠 로비로", use_container_width=True):
+        force_file_save()
+        st.switch_page("streamlit_app.py")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# 점수판 대시보드
+st.markdown(f"<div class='dashboard'><span>⭐ 점수: {st.session_state.game_score}점</span><span>💰 지갑: {st.session_state.gold} G</span></div>", unsafe_allow_html=True)
+
+# 캡슐 뽑기 연출 트리거 분기
+if st.session_state.gacha_step == "shaking":
+    st.markdown("<span class='capsule-shaking'>🍃</span>", unsafe_allow_html=True)
+    time.sleep(2.0)
+    st.session_state.gacha_step = "revealed"
+    st.rerun()
+elif st.session_state.gacha_step == "revealed":
+    tier, animal = st.session_state.revealed_animal
+    st.markdown(f"""
+        <div class='reveal-card'>
+            <div class='animal-icon'>{animal.split()[0]}</div>
+            <div class='animal-name'>[{tier}] {animal.split()[-1]}</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if "전설" in tier: st.balloons()
+    
+    col_confirm1, col_confirm2 = st.columns(2)
+    with col_confirm1:
+        if st.button("확인", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            next_question() 
+            force_file_save()
+            st.rerun()
+    with col_confirm2:
+        if st.button("도감 보기", use_container_width=True):
+            st.session_state.gacha_step = "idle"
+            next_question()
+            force_file_save()
+            st.switch_page("streamlit_app.py")
+
+# 평상시 게임 플레이 UI 로드
+if st.session_state.gacha_step == "idle":
+    with st.expander("🍃 [나뭇잎 캡슐 뽑기 상점]", expanded=False):
+        st.button("🔮 캡슐 뽑기 시작! (100 G)", on_click=start_gacha, use_container_width=True)
+
+    user_input_str = "".join(map(str, st.session_state.inputs)) if st.session_state.inputs else " ? "
+    
+    # 문제 출제 상자 
+    st.markdown(f"<div class='quiz-box'>{st.session_state.factor1} × {st.session_state.factor2} = [ {user_input_str} ]</div>", unsafe_allow_html=True)
+
+    # 정답을 맞힌 상태일 경우 키패드 잠금
+    is_locked = (st.session_state.status == "correct_waiting")
+
+    # 1 ~ 9 키패드 
+    key_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    for row in key_matrix:
+        pad_cols = st.columns(3)
+        for i, num in enumerate(row):
+            if pad_cols[i].button(str(num), key=f"pad_{num}", use_container_width=True, disabled=is_locked):
+                if len(st.session_state.inputs) < 2:
+                    st.session_state.inputs.append(num)
+                    st.rerun()
+
+    last_row_cols = st.columns(3)
+    
+    if last_row_cols[0].button("⌫", key="pad_del", use_container_width=True, disabled=is_locked):
+        if len(st.session_state.inputs) > 0:
+            st.session_state.inputs.pop()
+            st.rerun()
+            
+    if last_row_cols[1].button("0", key="pad_0", use_container_width=True, disabled=is_locked):
+        if len(st.session_state.inputs) < 2:
+            st.session_state.inputs.append(0)
+            st.rerun()
+            
+    if last_row_cols[2].button("확인", key="pad_enter", use_container_width=True, disabled=is_locked):
+        if st.session_state.inputs:
+            user_val = int("".join(map(str, st.session_state.inputs)))
+            
+            if user_val == st.session_state.target_answer:
+                reward = random.randint(8, 13)
+                st.session_state.gold += reward
+                st.session_state.game_score += 1
+                st.session_state.last_reward = reward
+                st.session_state.status = "correct_waiting" 
+                force_file_save()
+                st.rerun() 
+            else:
+                st.session_state.inputs = []
+                st.toast("앗! 나뭇잎이 흔들려요. 다시 계산해봐요! ❌")
+                st.rerun()
+
+    # 정답 알림 상자를 키패드 아래(최하단)에 배치합니다.
+    notice_box = st.empty()
+    
+    if st.session_state.status == "correct_waiting":
+        notice_box.success(f"🎉 정답입니다! 마법 나무가 +{st.session_state.last_reward}G 보상을 떨어뜨렸습니다!")
+        time.sleep(1.5)
+        next_question()
+        st.rerun()
