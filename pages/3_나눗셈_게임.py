@@ -43,9 +43,7 @@ def make_division_question():
     st.session_state.correct_answer = answer
     st.session_state.inputs = []
     st.session_state.status = "playing"
-    st.session_state.is_answered = False
-    if "last_reward" in st.session_state:
-        del st.session_state.last_reward
+    st.session_state.is_locked = False # 🔒 새 문제 시작 시 키보드 잠금 해제
 
 # 🛠️ 세션 상태 초기화 (AttributeError 원천 차단)
 if 'score' not in st.session_state: st.session_state.score = 0
@@ -53,7 +51,8 @@ if 'inputs' not in st.session_state: st.session_state.inputs = []
 if 'status' not in st.session_state: st.session_state.status = "playing"
 if 'gacha_step' not in st.session_state: st.session_state.gacha_step = "idle"
 if 'revealed_animal' not in st.session_state: st.session_state.revealed_animal = None
-if 'is_answered' not in st.session_state: st.session_state.is_answered = False
+if 'is_locked' not in st.session_state: st.session_state.is_locked = False
+if 'last_reward' not in st.session_state: st.session_state.last_reward = 0
 
 # 나눗셈용 필수 수학 변수가 세션에 없으면 즉시 생성
 if 'dividend' not in st.session_state or 'divisor' not in st.session_state or 'correct_answer' not in st.session_state:
@@ -82,56 +81,44 @@ def start_gacha():
     else:
         st.error("골드가 부족해요! 🪐")
 
-# --- 🌌 우주 테마 CSS (다른 퀘스트 맵과 완벽 규격 통일) ---
+# 🎯 키패드 버튼 클릭 콜백 함수
+def press_key(num):
+    if not st.session_state.is_locked and len(st.session_state.inputs) < 1:
+        st.session_state.inputs.append(num)
+
+def press_del():
+    if not st.session_state.is_locked:
+        st.session_state.inputs = []
+        st.session_state.status = "playing"
+
+# --- 🌌 우주 테마 CSS ---
 background_html = f"""
 <div class="custom-space-bg"></div>
 
 <style>
 /* 1. 배경화면 고정 레이어 */
 .custom-space-bg {{
-    position: fixed;
-    top: -10px; left: -10px; 
-    width: calc(100vw + 20px); 
-    height: calc(100vh + 20px);
+    position: fixed; top: -10px; left: -10px; width: calc(100vw + 20px); height: calc(100vh + 20px);
     background-image: url("data:image/png;base64,{img_base64}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center center !important;
-    background-size: cover !important;
-    filter: blur(5px) brightness(0.4); 
-    z-index: -3; 
-    pointer-events: none;
+    background-repeat: no-repeat !important; background-position: center center !important;
+    background-size: cover !important; filter: blur(5px) brightness(0.4); 
+    z-index: -3; pointer-events: none;
 }}
 
 /* 2. Streamlit 기본 컴포넌트 투명화 */
-.stApp, 
-section.main,
-[data-testid="stAppViewContainer"], 
-[data-testid="stHeader"], 
-[data-testid="stMainViewContainer"], 
-[data-testid="stMain"],
-[data-testid="stDecoration"] {{
-    background-color: transparent !important;
-    background: transparent !important;
+.stApp, section.main, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stMainViewContainer"], [data-testid="stMain"], [data-testid="stDecoration"] {{
+    background-color: transparent !important; background: transparent !important;
 }}
 
 /* 3. 신비로운 네온 우주선 반짝이 효과 */
-.space-particles-bg {{
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: -1; pointer-events: none; overflow: hidden;
-}}
+.space-particles-bg {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden; }}
 .pink-purple-sparkles {{
-    position: absolute; width: 4px; height: 4px; border-radius: 50%;
-    background: transparent;
-    box-shadow: 
-        20vw 30vh rgba(255, 0, 127, 0.6), 40vw 50vh rgba(138, 43, 226, 0.6), 60vw 20vh rgba(255, 255, 255, 0.7), 
-        80vw 70vh rgba(255, 0, 127, 0.5), 15vw 80vh rgba(138, 43, 226, 0.6), 85vw 15vh rgba(255, 255, 255, 0.5);
+    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: transparent;
+    box-shadow: 20vw 30vh rgba(255, 0, 127, 0.6), 40vw 50vh rgba(138, 43, 226, 0.6), 60vw 20vh rgba(255, 255, 255, 0.7), 
+                80vw 70vh rgba(255, 0, 127, 0.5), 15vw 80vh rgba(138, 43, 226, 0.6), 85vw 15vh rgba(255, 255, 255, 0.5);
     animation: galaxyOrbit 25s linear infinite;
 }}
-@keyframes galaxyOrbit {{
-    0% {{ transform: translateY(0) rotate(0deg); opacity: 0.6; }}
-    50% {{ opacity: 0.2; }}
-    100% {{ transform: translateY(-100vh) rotate(360deg); opacity: 0.6; }}
-}}
+@keyframes galaxyOrbit {{ 0% {{ transform: translateY(0) rotate(0deg); opacity: 0.6; }} 50% {{ opacity: 0.2; }} 100% {{ transform: translateY(-100vh) rotate(360deg); opacity: 0.6; }} }}
 
 /* 타이틀 디자인 */
 .game-title {{ font-size: 5.2vw; font-weight: bold; color: #FFFFFF; text-shadow: 2px 2px 8px rgba(255, 0, 127, 0.8); margin: 0; white-space: nowrap; }}
@@ -147,10 +134,7 @@ section.main,
     border: 5px solid #8A2BE2; box-shadow: 0px 8px 20px rgba(138, 43, 226, 0.4); margin-bottom: 25px; 
 }}
 
-.hint-box {{
-    font-family: Arial; font-size: 20px; color: #FF007F; font-weight: bold;
-    background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 12px; text-align: center; margin-top: 10px;
-}}
+.hint-box {{ font-family: Arial; font-size: 20px; color: #FF007F; font-weight: bold; background-color: rgba(255, 255, 255, 0.85); padding: 15px; border-radius: 15px; text-align: center; margin-top: 10px; border: 3px dashed #FF007F; }}
 
 /* 📊 대시보드 */
 .dashboard {{ 
@@ -159,31 +143,24 @@ section.main,
     box-shadow: 0px 4px 12px rgba(255, 0, 127, 0.2);
 }}
 
-/* 운석 충돌 진동 애니메이션 효과 */
-@keyframes vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-5px, 5px) rotate(-3deg); }} 40% {{ transform: translate(-5px, -5px) rotate(3deg); }} 60% {{ transform: translate(5px, 5px) rotate(-3deg); }} 80% {{ transform: translate(5px, -5px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
-.meteor-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.12s linear infinite; }}
-.reveal-card {{ background: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FF007F; box-shadow: 0 10px 30px rgba(255, 0, 127, 0.3); margin: 20px 0; }}
-.animal-icon {{ font-size: 100px; }}
-.animal-name {{ font-size: 38px; font-weight: bold; color: #2D004D !important; }}
-
-/* 🚀 [수정] 키패드 및 하단 버튼 크기 매칭 (곱셈 게임 스타일: 28px) */
+/* 🚀 키패드 및 하단 버튼 디자인 */
 div[data-testid="stButton"] button {{ 
     font-size: 28px !important; font-weight: bold !important; border-radius: 18px !important; 
     background-color: #8A2BE2 !important; color: #FFFFFF !important; height: 68px !important; 
     width: 100% !important; border: none !important; box-shadow: 0px 5px 0px #5A189A !important; 
     transition: all 0.05s ease-in-out !important;
 }}
-div[data-testid="stButton"] button p {{
-    color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important;
-}}
+div[data-testid="stButton"] button p {{ color: #FFFFFF !important; font-size: 26px !important; font-weight: bold !important; }}
 div[data-testid="stButton"] button:hover {{ background-color: #FF007F !important; box-shadow: 0px 5px 0px #C1005B !important; }}
 div[data-testid="stButton"] button:active {{ transform: translateY(4px) !important; box-shadow: 0px 1px 0px #5A189A !important; }}
+
+/* 🔒 잠긴 버튼(정답 후) 비활성화 디자인 */
 div[data-testid="stButton"] button:disabled {{
-    background-color: #8A2BE2 !important; color: #FFFFFF !important; box-shadow: 0px 5px 0px #5A189A !important;
-    transform: none !important; cursor: not-allowed !important; opacity: 0.85 !important;
+    background-color: #C89BFA !important; color: #FFFFFF !important; box-shadow: 0px 5px 0px #8A2BE2 !important;
+    transform: none !important; cursor: not-allowed !important; opacity: 0.7 !important;
 }}
 
-/* 🏠 [수정] 상단 로비 버튼 (숲/바다 게임의 규격 높이 45px, 폰트 16px 스타일 통일) */
+/* 🏠 상단 로비 버튼 */
 .lobby-btn button {{ 
     background-color: rgba(45, 0, 77, 0.85) !important; color: #FFFFFF !important; height: 45px !important; 
     font-size: 16px !important; box-shadow: 0px 4px 0px #1A0033 !important; font-weight: bold !important;
@@ -191,6 +168,18 @@ div[data-testid="stButton"] button:disabled {{
 .lobby-btn button p {{ font-size: 16px !important; font-weight: bold !important; color: #FFFFFF !important; }}
 .lobby-btn button:hover {{ background-color: #FF007F !important; box-shadow: 0px 4px 0px #C1005B !important; color: #FFFFFF !important; }}
 .lobby-btn button:active {{ transform: translateY(3px) !important; box-shadow: 0px 1px 0px #1A0033 !important; }}
+
+/* 💬 새로 추가된 우주 테마 피드백 메시지 박스 */
+.feedback-success {{ background: rgba(243, 230, 255, 0.95); color: #4A004A; padding: 15px; border-radius: 15px; text-align: center; font-size: 22px; font-weight: bold; border: 3px solid #8A2BE2; margin-top: 20px; box-shadow: 0px 4px 12px rgba(138, 43, 226, 0.3); }}
+.feedback-error {{ background: rgba(255, 227, 240, 0.95); color: #8B0045; padding: 15px; border-radius: 15px; text-align: center; font-size: 22px; font-weight: bold; border: 3px solid #FF007F; margin-top: 20px; box-shadow: 0px 4px 12px rgba(255, 0, 127, 0.3); }}
+
+/* 운석 충돌 진동 애니메이션 효과 */
+@keyframes vibrate {{ 0% {{ transform: translate(0) rotate(0deg); }} 20% {{ transform: translate(-5px, 5px) rotate(-3deg); }} 40% {{ transform: translate(-5px, -5px) rotate(3deg); }} 60% {{ transform: translate(5px, 5px) rotate(-3deg); }} 80% {{ transform: translate(5px, -5px) rotate(3deg); }} 100% {{ transform: translate(0) rotate(0deg); }} }}
+.meteor-shaking {{ font-size: 150px; text-align: center; display: block; margin: 20px auto; animation: vibrate 0.12s linear infinite; }}
+.reveal-card {{ background: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 40px; text-align: center; border: 5px solid #FF007F; box-shadow: 0 10px 30px rgba(255, 0, 127, 0.3); margin: 20px 0; }}
+.animal-icon {{ font-size: 100px; }}
+.animal-name {{ font-size: 38px; font-weight: bold; color: #2D004D !important; }}
+
 </style>
 
 <div class="space-particles-bg">
@@ -236,11 +225,13 @@ elif st.session_state.gacha_step == "revealed":
     with col_confirm1:
         if st.button("확인", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            make_division_question()
             force_file_save()
             st.rerun()
     with col_confirm2:
         if st.button("도감 보기", use_container_width=True):
             st.session_state.gacha_step = "idle"
+            make_division_question()
             force_file_save()
             st.switch_page("streamlit_app.py")
 
@@ -248,7 +239,30 @@ elif st.session_state.gacha_step == "revealed":
 if st.session_state.gacha_step == "idle":
     with st.expander("☄️ [빛나는 운석 뽑기 상점]", expanded=False):
         st.button("🔮 운석 파편 분석 시작! (100 G)", on_click=start_gacha, use_container_width=True)
-    
+
+    # 🎯 정답 판별 로직 (화면 그리기 전 검사)
+    feedback_msg = ""
+    feedback_type = ""
+
+    if len(st.session_state.inputs) == 1:
+        u_ans = st.session_state.inputs[0]
+        if u_ans == st.session_state.correct_answer:
+            if not st.session_state.is_locked: # 🔒 중복 획득 방지
+                reward = random.randint(8, 13)
+                st.session_state.score += 1
+                st.session_state.gold += reward
+                st.session_state.last_reward = reward
+                force_file_save()
+                st.session_state.is_locked = True
+            feedback_msg = f"🎆 우주의 축복! 정답입니다! +{st.session_state.last_reward}G 획득! 🚀"
+            feedback_type = "success"
+        else:
+            if not st.session_state.is_locked:
+                st.session_state.is_locked = True # 에러 메시지 출력 중 잠금
+            feedback_msg = "궤도를 이탈했습니다! 은하수 힌트를 확인해보세요! ☄️"
+            feedback_type = "error"
+
+    # 문제 출제 상자 렌더링
     if st.session_state.status == "hint":
         p_ans = "<span style='color: #FF007F; font-weight: 900;'> ? </span>"
     else:
@@ -256,53 +270,35 @@ if st.session_state.gacha_step == "idle":
         
     st.markdown(f"<div class='quiz-box'>{st.session_state.dividend} ÷ {st.session_state.divisor} = [ {p_ans} ]</div>", unsafe_allow_html=True)
 
-    is_keyboard_locked = (st.session_state.status == "correct_waiting") or ("last_reward" in st.session_state)
-
     # 계산기 패드 배치
     keypad = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     for row in keypad:
         cols = st.columns(3)
         for i, val in enumerate(row):
-            if cols[i].button(str(val), key=f"key_{val}", use_container_width=True, disabled=is_keyboard_locked):
-                if st.session_state.status == "hint":
-                    st.session_state.status = "playing"
-                if len(st.session_state.inputs) < 1:
-                    st.session_state.inputs.append(val)
-                    st.session_state.is_answered = True
-                    st.rerun()
+            cols[i].button(str(val), key=f"key_{val}", on_click=press_key, args=(val,), use_container_width=True, disabled=st.session_state.is_locked)
         
     # 하단 전체 지우기 패널
-    if st.button("⌫ 지우기", key="del_btn", use_container_width=True, disabled=is_keyboard_locked):
-        st.session_state.inputs = []
-        st.session_state.status = "playing"
-        st.rerun()
+    st.button("⌫ 지우기", key="del_btn", on_click=press_del, use_container_width=True, disabled=st.session_state.is_locked)
 
-    # 오답 시 힌트 마크다운 활성화
-    if st.session_state.status == "hint":
-        st.markdown(f"<div class='hint-box'>💡 은하수 힌트: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
+    # 💬 피드백 박스 & 힌트 박스 렌더링
+    if feedback_msg:
+        css_class = "feedback-success" if feedback_type == "success" else "feedback-error"
+        st.markdown(f"<div class='{css_class}'>{feedback_msg}</div>", unsafe_allow_html=True)
+    else:
+        if st.session_state.status == "hint":
+            st.markdown(f"<div class='hint-box'>💡 은하수 힌트: {st.session_state.divisor} × <span style='text-decoration: underline;'>{st.session_state.correct_answer}</span> = {st.session_state.dividend}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div style='height: 60px; margin-top: 20px;'></div>", unsafe_allow_html=True)
 
-    # 정답 알림 상자를 최하단에 띄우도록 설정
-    notice_box = st.empty()
-
-    # 정답 시 보상 연출 및 대기 처리
-    if "last_reward" in st.session_state:
-        notice_box.success(f"🎆 우주의 축복! 정답입니다! +{st.session_state.last_reward}G 획득!")
+    # ⏳ 피드백 딜레이 후 화면 자동 전환
+    if feedback_type == "success":
         time.sleep(1.2)
         make_division_question()
         st.rerun()
-
-    # 정답 판정 메커니즘
-    if len(st.session_state.inputs) == 1 and st.session_state.status == "playing" and st.session_state.is_answered:
-        if st.session_state.inputs[0] == st.session_state.correct_answer:
-            reward = random.randint(8, 13)
-            st.session_state.score += 1
-            st.session_state.gold += reward
-            st.session_state.last_reward = reward
-            st.session_state.status = "correct_waiting"
-            force_file_save()
-            st.rerun()
-        else:
-            st.session_state.status = "hint"
-            st.session_state.inputs = []
-            st.session_state.is_answered = False
-            st.rerun()
+    elif feedback_type == "error":
+        time.sleep(1.0)
+        # 오답일 경우 힌트 모드로 전환 후 입력창 초기화
+        st.session_state.status = "hint"
+        st.session_state.inputs = []
+        st.session_state.is_locked = False
+        st.rerun()
