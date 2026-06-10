@@ -104,6 +104,15 @@ div[data-style="stBlock"],
     box-shadow: none !important;
 }}
 
+/* 🚀 [공백 제거 패치] 타이틀과 로그인창 사이의 빈 공간 원천 차단 */
+div[data-testid="stVerticalBlock"] {{
+    gap: 0rem !important;
+}}
+div[data-testid="stVerticalBlock"] > div {{
+    padding-bottom: 0px !important;
+    margin-bottom: 0px !important;
+}}
+
 /* 1. 배경화면 고정 레이어 (복구 상태 유지) */
 .custom-lobby-bg {{
     position: fixed;
@@ -162,7 +171,7 @@ section.main,
     font-weight: bold; 
     color: #FFFFFF !important; 
     text-align: center;
-    margin-bottom: 25px; 
+    margin-bottom: 15px; 
     margin-top: 10px; 
     letter-spacing: 2px;
     white-space: nowrap; 
@@ -191,7 +200,7 @@ section.main,
     border-radius: 25px;
     border: 2px solid #475569 !important;
     box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
-    margin-top: 5px;
+    margin-top: 0px !important;
 }}
 .login-box h3, .login-box p, div[data-testid="stMarkdownContainer"] p {{
     color: #F8FAFC !important;
@@ -205,7 +214,7 @@ div[data-testid="stButton"] button {{
     color: #E2E8F0 !important; border: 3px solid #6366F1 !important;
     box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3) !important; 
     transition: 0.15s all ease !important; height: auto !important;
-}}
+}
 div[data-testid="stButton"] button p {{
     font-size: 18px !important; font-weight: bold !important; color: #FFFFFF !important;
 }}
@@ -252,12 +261,14 @@ if not img_base64:
 # 배경 및 스타일 적용
 st.markdown(background_html, unsafe_allow_html=True)
 
-# 메인 타이틀 출력
-st.markdown("<div class='main-title'>🌌 수학 차원 대모험 🧭</div>", unsafe_allow_html=True)
-
 # --- 🔐 로그인 화면 분기 ---
 if not st.session_state.logged_in:
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    # 💡 타이틀과 로그인 박스 시작 태그를 하나의 markdown으로 결합하여 렌더링 틈새 공백 제거
+    login_start_html = """
+    <div class='main-title'>🌌 수학 차원 대모험 🧭</div>
+    <div class='login-box'>
+    """
+    st.markdown(login_start_html, unsafe_allow_html=True)
     st.subheader("🔑 새벽의 빛을 따라온 모험가 로그인")
     st.write("나만의 고유 핀번호를 입력하고 새로운 차원의 문을 열어보세요!")
     
@@ -279,6 +290,9 @@ if not st.session_state.logged_in:
 
 # --- 🏠 로그인 성공 시 게임 로비 로드 ---
 else:
+    # 로그인 성공 시 렌더링될 메인 타이틀 독립 출력
+    st.markdown("<div class='main-title'>🌌 수학 차원 대모험 🧭</div>", unsafe_allow_html=True)
+    
     col_user, col_logout = st.columns([2, 1])
     with col_user:
         st.markdown(f"👤 **차원 탐사 대원:** `{st.session_state.current_pin}` 호")
